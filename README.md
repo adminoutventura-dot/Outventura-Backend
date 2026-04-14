@@ -1,3 +1,148 @@
+# Comparativa: Prisma vs TypeORM per a projectes NestJS
+
+## 1. Filosofia i forma de treball
+
+### Prisma
+- ORM declaratiu basat en un únic fitxer: schema.prisma
+- Genera automàticament migracions, tipus TS i el client de BD
+- No utilitza classes ni decoradors
+- Tot el model de dades està centralitzat
+
+### TypeORM
+- ORM orientat a classes: una entitat per fitxer
+- Utilitza decoradors (@Entity, @Column, etc.)
+- Migracions manuals o semi-automàtiques
+- Model de dades distribuït en múltiples fitxers
+
+------------------------------------------------------------
+
+## 2. Modularitat i organització
+
+### Prisma
+Avantatges:
+- Un únic fitxer facilita veure totes les relacions
+- Menys dispersió i menys boilerplate
+- Més ràpid de modificar quan t’hi acostumes
+
+Inconvenients:
+- Sensació inicial de “massa coses en un fitxer”
+- No permet dividir models en múltiples fitxers
+- Pot generar por a conflictes (encara que són rars)
+
+### TypeORM
+Avantatges:
+- Cada entitat en la seua carpeta → molt modular i visual
+- Familiar per a equips acostumats a Java/Hibernate
+- Facilita separar responsabilitats per mòduls
+
+Inconvenients:
+- Les relacions estan disperses en diversos fitxers
+- Més codi repetit i decoradors
+- Més risc de desincronització entre entitats i BD
+
+------------------------------------------------------------
+
+## 3. Escalabilitat
+
+### Prisma
+- Escala molt bé en projectes grans (100+ models)
+- Models curts i simples (5–15 línies)
+- Migracions automàtiques i segures
+- Tipus TS generats automàticament
+
+### TypeORM
+- Escala bé visualment (molts fitxers)
+- Familiar per a equips acostumats a entitats separades
+- Migracions més delicades
+- Més boilerplate a mesura que creix el projecte
+
+------------------------------------------------------------
+
+## 4. Experiència de desenvolupament
+
+### Prisma
+- Autocompletat excel·lent
+- Consultes més segures i ràpides d’escriure
+- Errors més clars
+- Menys codi i menys decoradors
+
+### TypeORM
+- Familiar i intuïtiu si vens d’ORMs clàssics
+- Entitats separades → sensació de control
+- Errors més críptics
+- Més codi per a CRUDs
+
+------------------------------------------------------------
+
+## 5. Integració amb NestJS
+
+### Prisma
+- S’integra molt bé via PrismaService
+- No utilitza repositoris, sinó un client generat
+- Menys codi per a CRUDs
+
+### TypeORM
+- Integració oficial i madura
+- Patró Repository molt natural en NestJS
+- Més codi per a CRUDs
+
+------------------------------------------------------------
+
+## 6. Quan triar Prisma?
+
+- Rapidesa de desenvolupament
+- Seguretat de tipus
+- Migracions automàtiques
+- Menys codi i menys decoradors
+- Relacions molt clares
+- ORM modern i productiu
+
+Ideal per a:
+- SaaS
+- APIs modernes
+- Projectes que creixeran en funcionalitat
+
+------------------------------------------------------------
+
+## 7. Quan triar TypeORM?
+
+- Modularitat visual (1 entitat = 1 fitxer)
+- Estil clàssic i familiar
+- Patrons orientats a objectes
+- Control manual de migracions
+
+Ideal per a:
+- Equips acostumats a Hibernate / Java
+- Projectes on la modularitat visual és prioritària
+
+------------------------------------------------------------
+
+## 8. Conclusió
+
+Cap ORM és millor que l’altre. Depén de l’estil de treball de l’equip.
+
+- Si valoreu modularitat visual i entitats separades → TypeORM
+- Si valoreu rapidesa, seguretat de tipus i simplicitat → Prisma
+
+La decisió ha de basar-se en com voleu treballar, no només en la tecnologia.
+
+
+
+| Tema | Prisma | TypeORM |
+| --- | --- | --- |
+| **Filosofia** | Declaratiu, un sol fitxer | Orientat a classes, molts fitxers |
+| **Modularitat** | Centralitzat (pot fer por al principi) | Altament modular i visual |
+| **Migracions** | Automàtiques i segures | Manuals o semi-automàtiques |
+| **Tipus TS** | Generats automàticament | Sovint manuals |
+| **Codi** | Menys codi, més net | Més boilerplate |
+| **Relacions** | Molt clares i explícites | Disperses entre fitxers |
+| **Escalabilitat** | Molt bona (100+ models) | Bona, però més codi |
+| **Integració NestJS** | Simple, via PrismaService | Oficial, via Repositories |
+| **Ideal per a** | APIs modernes, SaaS | Equips que volen modularitat visual |
+| **Sensació inicial** | “Tot en un fitxer” | “Tot separat i ordenat” |
+
+
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
