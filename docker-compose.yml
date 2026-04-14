@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: outventura_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: outventura
+      POSTGRES_PASSWORD: outventura123
+      POSTGRES_DB: outventura_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: outventura_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@outventura.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
