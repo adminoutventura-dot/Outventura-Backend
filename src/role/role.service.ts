@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -8,6 +8,14 @@ export class RoleService {
   constructor(private prisma: PrismaService) { }
 
   async create(dto: CreateRoleDto) {
+    const existingRole = await this.prisma.role.findUnique({
+      where: { code: dto.code },
+    });
+
+    if (existingRole) {
+      throw new ConflictException(`The code '${dto.code}' is already in use.`);
+    }
+
     return this.prisma.role.create({
       data: dto,
     });
@@ -24,12 +32,31 @@ export class RoleService {
   }
 
   async findOne(id: number) {
-    return this.prisma.role.findUnique({
+    const role = await this.prisma.role.findUnique({
       where: { id_role: id },
     });
+    if (!role) throw new NotFoundException(`Role with ID ${id} not found`);
+    return role;
   }
 
   async update(id: number, dto: UpdateRoleDto) {
+    await this.findOne(id);
+
+    if (dto.code) {
+      const duplicateCode = await this.prisma.role.findFirst({
+        where: {
+          code: dto.code,
+          NOT: { id_role: id },
+        },
+      });
+
+      if (duplicateCode) {
+        throw new ConflictException(
+          `Failed to update role: The code '${dto.code}' is already in use.`,
+        );
+      }
+    }
+
     return this.prisma.role.update({
       where: { id_role: id },
       data: dto,
@@ -52,7 +79,7 @@ export class RoleService {
 
     if (role._count.users > 0) {
       throw new BadRequestException(
-        `Failed to delete role "${role.code}" because it has ${role._count.users} users assigned. Please reassign the users first.`,
+        `Failed to delete role '${role.code}' because it has ${role._count.users} users assigned. Please reassign the users first.`,
       );
     }
 
