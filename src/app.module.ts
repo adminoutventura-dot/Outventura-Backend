@@ -6,9 +6,11 @@ import { RoleModule } from './role/role.module';
 import { UserModule } from './user/user.module';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { EquipmentModule } from './equipment/equipment.module';
+import { EquipmentStatusModule } from './equipment-status/equipment-status.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), RoleModule, UserModule, PrismaModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), RoleModule, UserModule, PrismaModule, EquipmentModule, EquipmentStatusModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
