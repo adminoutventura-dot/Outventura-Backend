@@ -16,6 +16,15 @@ export class EquipmentController {
     return this.equipmentService.create(dto);
   }
 
+  @Post(':id/category/:catId')
+  @ApiOperation({ summary: 'Assignar una categoria a un material' })
+  addCategory(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('catId', ParseIntPipe) catId: number
+  ) {
+    return this.equipmentService.addCategoryToEquipment(id, catId);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Llistar tot el material' })
   findAll() {

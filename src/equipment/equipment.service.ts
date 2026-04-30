@@ -12,16 +12,27 @@ export class EquipmentService {
     });
   }
 
+  async addCategoryToEquipment(equipmentId: number, categoryId: number) {
+    return this.prisma.equipment.update({
+      where: { id_equipment: equipmentId },
+      data: {
+        categories: {
+          connect: { id_category: categoryId }
+        }
+      }
+    });
+  }
+
   async findAll() {
     return this.prisma.equipment.findMany({
-      include: { status: true },
+      include: { status: true, categories: true },
     });
   }
 
   async findOne(id: number) {
     const item = await this.prisma.equipment.findUnique({
       where: { id_equipment: id },
-      include: { status: true },
+      include: { status: true, categories: true },
     });
     if (!item) throw new NotFoundException(`Material amb ID ${id} no trobat`);
     return item;
