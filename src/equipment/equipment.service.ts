@@ -1,26 +1,42 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateEquipmentDto } from './dto/create-equipment.dto';
-import { UpdateEquipmentDto } from './dto/update-equipment.dto';
 
 @Injectable()
 export class EquipmentService {
-  create(createEquipmentDto: CreateEquipmentDto) {
-    return 'This action adds a new equipment';
+  constructor(private prisma: PrismaService) { }
+
+  async create(dto: CreateEquipmentDto) {
+    return this.prisma.equipment.create({
+      data: dto,
+    });
   }
 
-  findAll() {
-    return `This action returns all equipment`;
+  async findAll() {
+    return this.prisma.equipment.findMany({
+      include: { status: true },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} equipment`;
+  async findOne(id: number) {
+    const item = await this.prisma.equipment.findUnique({
+      where: { id_equipment: id },
+      include: { status: true },
+    });
+    if (!item) throw new NotFoundException(`Material amb ID ${id} no trobat`);
+    return item;
   }
 
-  update(id: number, updateEquipmentDto: UpdateEquipmentDto) {
-    return `This action updates a #${id} equipment`;
+  async update(id: number, dto: Partial<CreateEquipmentDto>) {
+    return this.prisma.equipment.update({
+      where: { id_equipment: id },
+      data: dto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} equipment`;
+  async remove(id: number) {
+    return this.prisma.equipment.delete({
+      where: { id_equipment: id },
+    });
   }
 }

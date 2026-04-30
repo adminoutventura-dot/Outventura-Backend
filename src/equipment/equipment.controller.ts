@@ -1,34 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+// equipment.controller.ts
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { EquipmentService } from './equipment.service';
 import { CreateEquipmentDto } from './dto/create-equipment.dto';
-import { UpdateEquipmentDto } from './dto/update-equipment.dto';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+@ApiTags('Equipment')
 @Controller('equipment')
 export class EquipmentController {
-  constructor(private readonly equipmentService: EquipmentService) {}
+  constructor(private readonly equipmentService: EquipmentService) { }
 
   @Post()
-  create(@Body() createEquipmentDto: CreateEquipmentDto) {
-    return this.equipmentService.create(createEquipmentDto);
+  @ApiOperation({ summary: 'Registrar nou material en el catàleg' })
+  @ApiResponse({ status: 201, description: 'Material creat correctament.' })
+  create(@Body() dto: CreateEquipmentDto) {
+    return this.equipmentService.create(dto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Llistar tot el material' })
   findAll() {
     return this.equipmentService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.equipmentService.findOne(+id);
+  @ApiOperation({ summary: 'Obtenir detalls d\'un material per ID' })
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.equipmentService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEquipmentDto: UpdateEquipmentDto) {
-    return this.equipmentService.update(+id, updateEquipmentDto);
+  @ApiOperation({ summary: 'Actualitzar dades del material' })
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: Partial<CreateEquipmentDto>) {
+    return this.equipmentService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.equipmentService.remove(+id);
+  @ApiOperation({ summary: 'Eliminar material del catàleg' })
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.equipmentService.remove(id);
   }
 }
