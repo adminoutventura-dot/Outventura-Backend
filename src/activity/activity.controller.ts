@@ -1,34 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { ActivityService } from './activity.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
-import { UpdateActivityDto } from './dto/update-activity.dto';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
+@ApiTags('Activities')
 @Controller('activity')
 export class ActivityController {
-  constructor(private readonly activityService: ActivityService) {}
+  constructor(private readonly activitiesService: ActivityService) { }
 
   @Post()
-  create(@Body() createActivityDto: CreateActivityDto) {
-    return this.activityService.create(createActivityDto);
+  @ApiOperation({ summary: 'Crear activitat' })
+  create(@Body() dto: CreateActivityDto) {
+    return this.activitiesService.create(dto);
+  }
+
+  @Post(':id/category/:catId')
+  @ApiOperation({ summary: 'Assignar una categoria a una activitat' })
+  addCategory(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('catId', ParseIntPipe) catId: number
+  ) {
+    return this.activitiesService.addCategoryToActivity(id, catId);
   }
 
   @Get()
   findAll() {
-    return this.activityService.findAll();
+    return this.activitiesService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.activityService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.activitiesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateActivityDto: UpdateActivityDto) {
-    return this.activityService.update(+id, updateActivityDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: Partial<CreateActivityDto>) {
+    return this.activitiesService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.activityService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.activitiesService.remove(id);
   }
 }

@@ -1,26 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
-import { UpdateActivityDto } from './dto/update-activity.dto';
 
 @Injectable()
 export class ActivityService {
-  create(createActivityDto: CreateActivityDto) {
-    return 'This action adds a new activity';
+  constructor(private prisma: PrismaService) { }
+
+  async create(dto: CreateActivityDto) {
+    return this.prisma.activity.create({
+      data: dto,
+    });
   }
 
-  findAll() {
-    return `This action returns all activity`;
+  async addCategoryToActivity(activityId: number, categoryId: number) {
+    return this.prisma.activity.update({
+      where: { id_activity: activityId },
+      data: {
+        categories: {
+          connect: { id_category: categoryId }
+        }
+      }
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} activity`;
+  async findAll() {
+    return this.prisma.activity.findMany({
+      include: { categories: true }
+    });
   }
 
-  update(id: number, updateActivityDto: UpdateActivityDto) {
-    return `This action updates a #${id} activity`;
+  async findOne(id: number) {
+    const activity = await this.prisma.activity.findUnique({
+      where: { id_activity: id },
+      include: { categories: true }
+    });
+    if (!activity) throw new NotFoundException(`Activitat ${id} no trobada`);
+    return activity;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} activity`;
+  async update(id: number, dto: Partial<CreateActivityDto>) {
+    return this.prisma.activity.update({
+      where: { id_activity: id },
+      data: dto,
+    });
+  }
+
+  async remove(id: number) {
+    return this.prisma.activity.delete({
+      where: { id_activity: id },
+    });
   }
 }
