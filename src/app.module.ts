@@ -8,9 +8,11 @@ import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { EquipmentModule } from './equipment/equipment.module';
 import { EquipmentStatusModule } from './equipment-status/equipment-status.module';
+import { CategoryModule } from './category/category.module';
+import { ActivityModule } from './activity/activity.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), RoleModule, UserModule, PrismaModule, EquipmentModule, EquipmentStatusModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), RoleModule, UserModule, PrismaModule, EquipmentModule, EquipmentStatusModule, CategoryModule, ActivityModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })

@@ -31,9 +31,18 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+model Category {
+  id_category Int     @id @default(autoincrement())
+  code        String  @unique
+  description String?
+
+  equipments Equipment[]
+  activities Activity[]
+}
+
 model EquipmentStatus {
   id_status   Int     @id @default(autoincrement())
-  code        String  @unique // "AVAILABLE", "REPAIR", "RETIRED"
+  code        String  @unique
   description String?
 
   equipments Equipment[]
@@ -48,4 +57,19 @@ model Equipment {
 
   statusId Int
   status   EquipmentStatus @relation(fields: [statusId], references: [id_status])
+
+  categories Category[]
+}
+
+model Activity {
+  id_activity      Int      @id @default(autoincrement())
+  title            String
+  description      String?
+  init_date        DateTime
+  end_date         DateTime
+  difficulty       Int
+  max_participants Int
+  start_end_point  String?
+
+  categories Category[]
 }
