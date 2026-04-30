@@ -1,34 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+// categories.controller.ts
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+@ApiTags('Categories')
 @Controller('category')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoriesService: CategoryService) { }
 
   @Post()
-  create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoryService.create(createCategoryDto);
+  @ApiOperation({ summary: 'Crear una nova categoria' })
+  @ApiResponse({ status: 201, description: 'Categoria creada correctament.' })
+  create(@Body() dto: CreateCategoryDto) {
+    return this.categoriesService.create(dto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Llistar totes les categories amb comptador de relacions' })
   findAll() {
-    return this.categoryService.findAll();
+    return this.categoriesService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoryService.findOne(+id);
+  @ApiOperation({ summary: 'Obtenir una categoria i els seus elements vinculats' })
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.categoriesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoryService.update(+id, updateCategoryDto);
+  @ApiOperation({ summary: 'Actualitzar una categoria' })
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: Partial<CreateCategoryDto>) {
+    return this.categoriesService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoryService.remove(+id);
+  @ApiOperation({ summary: 'Eliminar una categoria' })
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.categoriesService.remove(id);
   }
 }
