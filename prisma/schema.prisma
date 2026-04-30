@@ -33,17 +33,18 @@ model User {
 
 model EquipmentStatus {
   id_status   Int     @id @default(autoincrement())
-  code        String  @unique
+  code        String  @unique // "AVAILABLE", "REPAIR", "RETIRED"
   description String?
 
   equipments Equipment[]
 }
 
 model Equipment {
-  id_equipment Int     @id @default(autoincrement())
-  name         String
-  description  String?
-  priceADay    Decimal @db.Decimal(10, 2)
+  id_equipment  Int     @id @default(autoincrement())
+  title         String
+  description   String?
+  price_per_day Decimal @db.Decimal(10, 2)
+  units         Int     @default(1)
 
   statusId Int
   status   EquipmentStatus @relation(fields: [statusId], references: [id_status])

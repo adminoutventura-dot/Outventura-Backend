@@ -1,34 +1,44 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { EquipmentStatusService } from './equipment-status.service';
 import { CreateEquipmentStatusDto } from './dto/create-equipment-status.dto';
-import { UpdateEquipmentStatusDto } from './dto/update-equipment-status.dto';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+@ApiTags('Equipment Status')
 @Controller('equipment-status')
 export class EquipmentStatusController {
-  constructor(private readonly equipmentStatusService: EquipmentStatusService) {}
+  constructor(private readonly service: EquipmentStatusService) { }
 
   @Post()
-  create(@Body() createEquipmentStatusDto: CreateEquipmentStatusDto) {
-    return this.equipmentStatusService.create(createEquipmentStatusDto);
+  @ApiOperation({ summary: 'Crear un nou estat per al material' })
+  @ApiResponse({ status: 201, description: 'Estat creat correctament.' })
+  @ApiResponse({ status: 409, description: 'El codi d\'estat ja existeix.' })
+  create(@Body() dto: CreateEquipmentStatusDto) {
+    return this.service.create(dto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Llistar tots els estats de material' })
   findAll() {
-    return this.equipmentStatusService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.equipmentStatusService.findOne(+id);
+  @ApiOperation({ summary: 'Obtenir un estat per ID' })
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEquipmentStatusDto: UpdateEquipmentStatusDto) {
-    return this.equipmentStatusService.update(+id, updateEquipmentStatusDto);
+  @ApiOperation({ summary: 'Actualitzar un estat' })
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: Partial<CreateEquipmentStatusDto>) {
+    return this.service.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.equipmentStatusService.remove(+id);
+  @ApiOperation({ summary: 'Eliminar un estat' })
+  @ApiResponse({ status: 200, description: 'Estat eliminat correctament.' })
+  @ApiResponse({ status: 400, description: 'No es pot eliminar si té equips associats.' })
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.service.remove(id);
   }
 }
