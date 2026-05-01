@@ -2,6 +2,7 @@ import "dotenv/config";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
+import * as bcrypt from 'bcrypt';
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -48,11 +49,15 @@ async function seedUsers(): Promise<void> {
         throw new Error('These roles are missing from the database. Please run seedRoles first.');
     }
 
+    const hashedSuper = await bcrypt.hash('superadmin', 10);
+    const hashedAdmin = await bcrypt.hash('admin', 10);
+    const hashedUser = await bcrypt.hash('user', 10);
+
     const users = [
-        { name: 'Carolina', surname: 'Agullo', email: 'carolina@superadmin.com', phone: '123456789', password: 'superadmin', roleId: superRole.id_role },
-        { name: 'Miriam', surname: 'Navalon', email: 'miriam@superadmin.com', phone: '123456789', password: 'superadmin', roleId: superRole.id_role },
-        { name: 'Paco', surname: 'Perez', email: 'paco@admin.com', phone: '123456789', password: 'admin', roleId: adminRole.id_role },
-        { name: 'Lola', surname: 'Lopez', email: 'lola@user.com', phone: '123456789', password: 'user', roleId: userRole.id_role },
+        { name: 'Carolina', surname: 'Agullo', email: 'carolina@superadmin.com', phone: '123456789', password: hashedSuper, roleId: superRole.id_role },
+        { name: 'Miriam', surname: 'Navalon', email: 'miriam@superadmin.com', phone: '123456789', password: hashedSuper, roleId: superRole.id_role },
+        { name: 'Paco', surname: 'Perez', email: 'paco@admin.com', phone: '123456789', password: hashedAdmin, roleId: adminRole.id_role },
+        { name: 'Lola', surname: 'Lopez', email: 'lola@user.com', phone: '123456789', password: hashedUser, roleId: userRole.id_role },
     ];
 
     for (const user of users) {
