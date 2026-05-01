@@ -10,9 +10,10 @@ import { EquipmentModule } from './equipment/equipment.module';
 import { EquipmentStatusModule } from './equipment-status/equipment-status.module';
 import { CategoryModule } from './category/category.module';
 import { ActivityModule } from './activity/activity.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), RoleModule, UserModule, PrismaModule, EquipmentModule, EquipmentStatusModule, CategoryModule, ActivityModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), RoleModule, UserModule, PrismaModule, EquipmentModule, EquipmentStatusModule, CategoryModule, ActivityModule, AuthModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
