@@ -26,7 +26,17 @@ async function bootstrap() {
     .addTag('Activities', 'Catàleg d\'activitats')
     .addTag('Equipment', 'Inventari de material')
     .addTag('Equipment Status', 'Estat del material')
-    // .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Introdueix el token JWT',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
