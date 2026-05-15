@@ -12,6 +12,9 @@ import { CategoryModule } from './category/category.module';
 import { ActivityModule } from './activity/activity.module';
 import { AuthModule } from './auth/auth.module';
 import { LoggerMiddleware } from './middleware/logger.middleware';
+import { SecurityHeadersMiddleware } from './middleware/security-headers.middleware';
+import { MaintenanceMiddleware } from './middleware/maintenance.middleware';
+import { ContentTypeMiddleware } from './middleware/content-type.middleware';
 
 @Module({
   imports: [
@@ -31,7 +34,12 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(LoggerMiddleware)
+      .apply(
+        LoggerMiddleware,
+        SecurityHeadersMiddleware,
+        MaintenanceMiddleware,
+        ContentTypeMiddleware
+      )
       .forRoutes('*');
   }
 }
