@@ -8,8 +8,8 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorators';
 
 @ApiTags('Roles (for User Management)')
-@ApiBearerAuth('JWT-auth')   // Swagger mostra el cadenat 🔒
-@UseGuards(JwtAuthGuard, RolesGuard)  // Protecció real
+@ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('role')
 export class RoleController {
   constructor(private readonly roleService: RoleService) { }

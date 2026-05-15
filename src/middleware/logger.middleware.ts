@@ -13,7 +13,8 @@ export class LoggerMiddleware implements NestMiddleware {
         res.on('finish', () => {
             const { statusCode } = res;
             const elapsed = Date.now() - start;
-            this.logger.log(`${method} ${originalUrl} ${statusCode} - ${elapsed}ms - ${ip} - ${userAgent}`);
+            const token = req.get('authorization') ? '🔒 authenticated' : '🔓 anonymous';
+            this.logger.log(`[${token}] ${method} ${originalUrl} ${statusCode} - ${elapsed}ms - ${ip} - ${userAgent}`);
         });
 
         next();

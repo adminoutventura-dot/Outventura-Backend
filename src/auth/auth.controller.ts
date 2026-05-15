@@ -1,7 +1,9 @@
-import { Controller, Post, Body, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, Get, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -16,5 +18,15 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Credencials invàlides' })
   login(@Body() loginDto: LoginAuthDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Obté el perfil de l\'usuari autenticat' })
+  @ApiResponse({ status: 200, description: 'Retorna les dades de l\'usuari autenticat' })
+  @ApiResponse({ status: 401, description: 'No autenticat' })
+  getProfile(@CurrentUser() user: any) {
+    return user;
   }
 }
