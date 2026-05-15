@@ -50,8 +50,8 @@ async function seedUsers(): Promise<void> {
     }
 
     const hashedSuper = await bcrypt.hash('superadmin', 10);
-    const hashedAdmin = await bcrypt.hash('admin', 10);
-    const hashedUser = await bcrypt.hash('user', 10);
+    const hashedAdmin = await bcrypt.hash('adminadmin', 10);
+    const hashedUser = await bcrypt.hash('useruser', 10);
 
     const users = [
         { name: 'Carolina', surname: 'Agullo', email: 'carolina@superadmin.com', phone: '123456789', password: hashedSuper, roleId: superRole.id_role },
