@@ -15,6 +15,7 @@ async function seedRoles(): Promise<void> {
     const roles = [
         { code: 'SUPER', description: 'Super administrador del sistema' },
         { code: 'ADMIN', description: 'Administrador del sistema' },
+        { code: 'GUIDE', description: 'Guia de les activitats' },
         { code: 'USER', description: 'Usuari estàndard logged in' },
         { code: 'GUEST', description: 'Usuari convidat' },
     ];
@@ -41,22 +42,29 @@ async function seedUsers(): Promise<void> {
         where: { code: 'ADMIN' },
     });
 
+    const guideRole = await prisma.role.findUnique({
+        where: { code: 'GUIDE' },
+    });
+
     const userRole = await prisma.role.findUnique({
         where: { code: 'USER' },
     });
 
-    if (!superRole || !adminRole || !userRole) {
+
+    if (!superRole || !adminRole || !guideRole || !userRole) {
         throw new Error('These roles are missing from the database. Please run seedRoles first.');
     }
 
     const hashedSuper = await bcrypt.hash('superadmin', 10);
     const hashedAdmin = await bcrypt.hash('adminadmin', 10);
+    const hashedGuide = await bcrypt.hash('guideguide', 10);
     const hashedUser = await bcrypt.hash('useruser', 10);
 
     const users = [
         { name: 'Carolina', surname: 'Agullo', email: 'carolina@superadmin.com', phone: '123456789', password: hashedSuper, roleId: superRole.id_role },
         { name: 'Miriam', surname: 'Navalon', email: 'miriam@superadmin.com', phone: '123456789', password: hashedSuper, roleId: superRole.id_role },
         { name: 'Paco', surname: 'Perez', email: 'paco@admin.com', phone: '123456789', password: hashedAdmin, roleId: adminRole.id_role },
+        { name: 'Carlos', surname: 'Cruz', email: 'carlos@guide.com', phone: '123456789', password: hashedGuide, roleId: guideRole.id_role },
         { name: 'Lola', surname: 'Lopez', email: 'lola@user.com', phone: '123456789', password: hashedUser, roleId: userRole.id_role },
     ];
 

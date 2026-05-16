@@ -35,4 +35,8 @@ export class CreateActivityDto {
     @IsString()
     @IsOptional()
     start_end_point?: string;
+
+    @ApiProperty({ example: 1, description: 'ID del guia assignat' })
+    @IsInt()
+    guideId!: number;
 }

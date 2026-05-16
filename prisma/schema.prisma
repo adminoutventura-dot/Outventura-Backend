@@ -22,7 +22,7 @@ model User {
   phone            String?
   photo            String?
   password         String
-  experience_level Int
+  experience_level String?
   status           Boolean @default(true)
 
   roleId Int
@@ -86,6 +86,6 @@ model Activity {
 
   categories Category[]
 
-  guideId Int?
-  guide   Guide? @relation(fields: [guideId], references: [id_guide])
+  guideId Int
+  guide   Guide @relation(fields: [guideId], references: [id_guide])
 }
