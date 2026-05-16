@@ -15,18 +15,22 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
 import { SecurityHeadersMiddleware } from './middleware/security-headers.middleware';
 import { MaintenanceMiddleware } from './middleware/maintenance.middleware';
 import { ContentTypeMiddleware } from './middleware/content-type.middleware';
+import { ClientModule } from './client/client.module';
+import { GuideModule } from './guide/guide.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
     RoleModule,
     UserModule,
-    PrismaModule,
+    ClientModule,
+    GuideModule,
     EquipmentModule,
     EquipmentStatusModule,
     CategoryModule,
     ActivityModule,
-    AuthModule
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

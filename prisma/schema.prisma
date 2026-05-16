@@ -27,8 +27,27 @@ model User {
   roleId Int
   role   Role @relation(fields: [roleId], references: [id_role])
 
+  client Client?
+  guide  Guide?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Client {
+  id_client        Int     @id @default(autoincrement())
+  userId           Int     @unique
+  user             User    @relation(fields: [userId], references: [id_user])
+  experience_level String?
+}
+
+model Guide {
+  id_guide    Int        @id @default(autoincrement())
+  userId      Int        @unique
+  user        User       @relation(fields: [userId], references: [id_user])
+  specialty   String?
+  credentials String?
+  activities  Activity[]
 }
 
 model Category {
@@ -72,4 +91,7 @@ model Activity {
   start_end_point  String?
 
   categories Category[]
+
+  guideId Int?
+  guide   Guide? @relation(fields: [guideId], references: [id_guide])
 }
