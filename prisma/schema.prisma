@@ -28,7 +28,8 @@ model User {
   roleId Int
   role   Role @relation(fields: [roleId], references: [id_role])
 
-  guide Guide?
+  guide    Guide?
+  bookings Booking[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -71,7 +72,8 @@ model Equipment {
   statusId Int
   status   EquipmentStatus @relation(fields: [statusId], references: [id_status])
 
-  categories Category[]
+  categories   Category[]
+  bookingLines BookingLine[]
 }
 
 model Activity {
@@ -86,6 +88,43 @@ model Activity {
 
   categories Category[]
 
-  guideId Int
-  guide   Guide @relation(fields: [guideId], references: [id_guide])
+  guideId      Int
+  guide        Guide         @relation(fields: [guideId], references: [id_guide])
+  bookingLines BookingLine[]
+}
+
+model BookingStatus {
+  id_book_status Int       @id @default(autoincrement())
+  code           String    @unique
+  description    String?
+  bookings       Booking[]
+}
+
+model Booking {
+  id_booking  Int      @id @default(autoincrement())
+  created_at  DateTime @default(now())
+  total_price Decimal  @db.Decimal(10, 2)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id_user])
+
+  statusId Int
+  status   BookingStatus @relation(fields: [statusId], references: [id_book_status])
+
+  lines BookingLine[]
+}
+
+model BookingLine {
+  id_line         Int     @id @default(autoincrement())
+  quantity        Int     @default(1)
+  price_at_moment Decimal @db.Decimal(10, 2)
+
+  bookingId Int
+  booking   Booking @relation(fields: [bookingId], references: [id_booking])
+
+  equipmentId Int?
+  equipment   Equipment? @relation(fields: [equipmentId], references: [id_equipment])
+
+  activityId Int?
+  activity   Activity? @relation(fields: [activityId], references: [id_activity])
 }
