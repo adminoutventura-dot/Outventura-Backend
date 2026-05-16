@@ -15,7 +15,6 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
 import { SecurityHeadersMiddleware } from './middleware/security-headers.middleware';
 import { MaintenanceMiddleware } from './middleware/maintenance.middleware';
 import { ContentTypeMiddleware } from './middleware/content-type.middleware';
-import { ClientModule } from './client/client.module';
 import { GuideModule } from './guide/guide.module';
 
 @Module({
@@ -24,7 +23,6 @@ import { GuideModule } from './guide/guide.module';
     PrismaModule,
     RoleModule,
     UserModule,
-    ClientModule,
     GuideModule,
     EquipmentModule,
     EquipmentStatusModule,
