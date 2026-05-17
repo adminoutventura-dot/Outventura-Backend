@@ -1,41 +1,69 @@
-// categories.controller.ts
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorators';
 
 @ApiTags('Categories')
+@ApiBearerAuth('JWT-auth')
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoriesService: CategoryService) { }
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPER', 'ADMIN')
   @ApiOperation({ summary: 'Crear una nova categoria' })
   @ApiResponse({ status: 201, description: 'Categoria creada correctament.' })
+  @ApiResponse({ status: 401, description: 'No autenticat.' })
+  @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
+  @ApiResponse({ status: 409, description: 'La categoria ja existeix.' })
   create(@Body() dto: CreateCategoryDto) {
     return this.categoriesService.create(dto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Llistar totes les categories amb comptador de relacions' })
+  @UseGuards(OptionalJwtGuard, RolesGuard)
+  @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER', 'GUEST')
+  @ApiOperation({ summary: 'Llistar totes les categories' })
+  @ApiResponse({ status: 200, description: 'Llista de categories retornada.' })
   findAll() {
     return this.categoriesService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obtenir una categoria i els seus elements vinculats' })
+  @UseGuards(OptionalJwtGuard, RolesGuard)
+  @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER', 'GUEST')
+  @ApiOperation({ summary: 'Obtenir una categoria per ID' })
+  @ApiResponse({ status: 200, description: 'Categoria retornada correctament.' })
+  @ApiResponse({ status: 404, description: 'Categoria no trobada.' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.categoriesService.findOne(id);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPER', 'ADMIN')
   @ApiOperation({ summary: 'Actualitzar una categoria' })
+  @ApiResponse({ status: 200, description: 'Categoria actualitzada correctament.' })
+  @ApiResponse({ status: 401, description: 'No autenticat.' })
+  @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
+  @ApiResponse({ status: 404, description: 'Categoria no trobada.' })
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: Partial<CreateCategoryDto>) {
     return this.categoriesService.update(id, dto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPER')
   @ApiOperation({ summary: 'Eliminar una categoria' })
+  @ApiResponse({ status: 200, description: 'Categoria eliminada correctament.' })
+  @ApiResponse({ status: 401, description: 'No autenticat.' })
+  @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
+  @ApiResponse({ status: 404, description: 'Categoria no trobada.' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.categoriesService.remove(id);
   }

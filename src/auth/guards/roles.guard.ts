@@ -15,9 +15,10 @@ export class RolesGuard implements CanActivate {
         if (!requiredRoles) return true;
 
         const { user } = context.switchToHttp().getRequest();
-        const hasRole = requiredRoles.includes(user.role.code);
 
-        if (!hasRole) {
+        const userRole = user?.role?.code ?? 'GUEST';
+
+        if (!requiredRoles.includes(userRole)) {
             throw new ForbiddenException('No tens permisos suficients per a accedir a aquest recurs');
         }
 
