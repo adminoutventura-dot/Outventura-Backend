@@ -1,4 +1,3 @@
-// booking-status.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { BookingStatusService } from './booking-status.service';
 import { CreateBookingStatusDto } from './dto/create-booking-status.dto';
@@ -36,7 +35,7 @@ export class BookingStatusController {
   }
 
   @Get(':id')
-  @Roles('SUPER', 'ADMIN', 'GUIDE')
+  @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER')
   @ApiOperation({ summary: 'Obtenir un estat de reserva per ID' })
   @ApiResponse({ status: 200, description: 'Estat retornat correctament.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })

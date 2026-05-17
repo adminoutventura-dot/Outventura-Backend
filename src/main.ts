@@ -22,10 +22,14 @@ async function bootstrap() {
     .addTag('Auth', 'Accés i seguretat')
     .addTag('Roles (for User Management)', 'Rols i permisos')
     .addTag('Users', 'Usuaris del sistema')
+    .addTag('Guides', 'Guies del sistema')
     .addTag('Categories', 'Categories d\'activitats i material')
     .addTag('Activities', 'Catàleg d\'activitats')
     .addTag('Equipment', 'Inventari de material')
     .addTag('Equipment Status', 'Estat del material')
+    .addTag('Bookings', 'Reserves del sistema')
+    .addTag('Booking Status', 'Estat de les reserves')
+    .addTag('Booking Lines', 'Línies de les reserves')
     .addBearerAuth(
       {
         type: 'http',
