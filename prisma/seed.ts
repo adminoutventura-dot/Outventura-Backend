@@ -79,19 +79,127 @@ async function seedUsers(): Promise<void> {
     console.log('... end seeding User.\n');
 }
 
+async function seedBookingStatuses(): Promise<void> {
+    console.log('🌱 BookingStatus seeding ...');
+
+    const statuses = [
+        { code: 'PENDING', description: 'Reserva pendent de confirmació' },
+        { code: 'ACCEPTED', description: 'Reserva acceptada' },
+        { code: 'IN_PROGRESS', description: 'Reserva en curs' },
+        { code: 'FINISHED', description: 'Reserva finalitzada' },
+        { code: 'CANCELLED', description: 'Reserva cancel·lada' },
+    ];
+
+    for (const status of statuses) {
+        await prisma.bookingStatus.upsert({
+            where: { code: status.code },
+            update: {},
+            create: status,
+        });
+    }
+
+    console.log('... end seeding BookingStatus.\n');
+}
+
+async function seedGuides(): Promise<void> {
+    console.log('🌱 Guide seeding ...');
+
+    const carlosUser = await prisma.user.findUnique({
+        where: { email: 'carlos@guide.com' }
+    });
+
+    if (!carlosUser) throw new Error('Usuari guia no trobat. Executa seedUsers primer.');
+
+    await prisma.guide.upsert({
+        where: { userId: carlosUser.id_user },
+        update: {},
+        create: {
+            userId: carlosUser.id_user,
+            specialty: 'Senderisme',
+            credentials: 'Llicència federativa núm. 1234',
+        }
+    });
+
+    console.log('... end seeding Guide.\n');
+}
+
+async function seedCategories(): Promise<void> {
+    console.log('🌱 Category seeding ...');
+
+    const categories = [
+        { code: 'AQUATICA', description: 'Activitats aquàtiques' },
+        { code: 'NEU', description: 'Activitats de neu' },
+        { code: 'SENDERISME', description: 'Senderisme i rutes' },
+        { code: 'MUNTANYA', description: 'Activitats de muntanya' },
+        { code: 'ACAMPADA', description: 'Acampada i bivac' },
+    ];
+
+    for (const category of categories) {
+        await prisma.category.upsert({
+            where: { code: category.code },
+            update: {},
+            create: category,
+        });
+    }
+
+    console.log('... end seeding Category.\n');
+}
+
+async function seedActivities(): Promise<void> {
+    console.log('🌱 Activity seeding ...');
+
+    const guide = await prisma.guide.findFirst();
+    if (!guide) throw new Error('Cal tenir almenys un Guide. Executa seedGuides primer.');
+
+    const senderismeCategory = await prisma.category.findUnique({
+        where: { code: 'SENDERISME' }
+    });
+
+    const activity = await prisma.activity.upsert({
+        where: { id_activity: 1 },
+        update: {},
+        create: {
+            title: 'Ruta de les Fonts',
+            description: 'Ruta guiada per les fonts naturals del riu.',
+            init_date: new Date('2026-06-15T09:00:00Z'),
+            end_date: new Date('2026-06-15T14:00:00Z'),
+            difficulty: 2,
+            max_participants: 15,
+            start_end_point: 'Plaça de l\'Ajuntament',
+            guideId: guide.id_guide,
+        }
+    });
+
+    if (senderismeCategory) {
+        await prisma.activity.update({
+            where: { id_activity: activity.id_activity },
+            data: {
+                categories: { connect: { id_category: senderismeCategory.id_category } }
+            }
+        });
+    }
+
+    console.log('... end seeding Activity.\n');
+}
+
 
 async function main() {
     try {
         await seedRoles();
         await seedUsers();
-
+        await seedBookingStatuses();
+        await seedGuides();
+        await seedCategories();
+        await seedActivities();
 
         console.log('Seeding succesfully completed.');
+
     } catch (error) {
         console.error('Seeding failed:', error);
         throw error;
     }
 }
+
 
 main()
     .catch(async (e) => {
