@@ -24,19 +24,18 @@ export class UserService {
     });
 
     const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return { ...userWithoutPassword, status: userWithoutPassword.status ? 'ACTIU' : 'INACTIU' };
   }
 
   async findAll() {
     const users = await this.prisma.user.findMany({
-      include: {
-        role: {
-          select: { id_role: true, code: true }
-        }
-      }
+      include: { role: { select: { id_role: true, code: true } } }
     });
 
-    return users.map(({ password, ...userWithoutPassword }) => userWithoutPassword);
+    return users.map(({ password, ...u }) => ({
+      ...u,
+      status: u.status ? 'ACTIU' : 'INACTIU'
+    }));
   }
 
   async findAllActive() {
@@ -44,7 +43,11 @@ export class UserService {
       where: { status: true },
       include: { role: { select: { id_role: true, code: true } } }
     });
-    return users.map(({ password, ...u }) => u);
+
+    return users.map(({ password, ...u }) => ({
+      ...u,
+      status: 'ACTIU'
+    }));
   }
 
   async findOne(id: number) {
@@ -52,11 +55,10 @@ export class UserService {
       where: { id_user: id },
       include: { role: true }
     });
-
     if (!user) throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
 
     const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return { ...userWithoutPassword, status: userWithoutPassword.status ? 'ACTIU' : 'INACTIU' };
   }
 
   async update(id: number, dto: UpdateUserDto, currentUser: any) {
@@ -71,27 +73,14 @@ export class UserService {
 
     if (currentRole !== 'SUPER') {
       if (currentRole === 'ADMIN') {
-        if (dto.roleId) {
-          throw new ForbiddenException('Només un SUPER pot canviar el rol d\'un usuari');
-        }
-
-        if (targetRole === 'SUPER') {
-          throw new ForbiddenException('No pots editar un SUPER');
-        }
-
+        if (dto.roleId) throw new ForbiddenException('Només un SUPER pot canviar el rol d\'un usuari');
+        if (targetRole === 'SUPER') throw new ForbiddenException('No pots editar un SUPER');
         if (targetRole === 'ADMIN' && targetUser.id_user !== currentUser.id_user) {
           throw new ForbiddenException('No pots editar un altre ADMIN');
         }
-
-      }
-      else {
-        if (dto.roleId) {
-          throw new ForbiddenException('No tens permisos per canviar el rol');
-        }
-
-        if (id !== currentUser.id_user) {
-          throw new ForbiddenException('Només pots editar el teu propi perfil');
-        }
+      } else {
+        if (dto.roleId) throw new ForbiddenException('No tens permisos per canviar el rol');
+        if (id !== currentUser.id_user) throw new ForbiddenException('Només pots editar el teu propi perfil');
       }
     }
 
@@ -114,7 +103,7 @@ export class UserService {
     });
 
     const { password, ...userWithoutPassword } = updatedUser;
-    return userWithoutPassword;
+    return { ...userWithoutPassword, status: userWithoutPassword.status ? 'ACTIU' : 'INACTIU' };
   }
 
   async promoteToGuide(id: number, specialty: string, credentials: string) {
@@ -145,7 +134,10 @@ export class UserService {
       ]);
 
       const { password, ...userWithoutPassword } = updatedUser;
-      return { user: userWithoutPassword, guide };
+      return {
+        user: { ...userWithoutPassword, status: userWithoutPassword.status ? 'ACTIU' : 'INACTIU' },
+        guide
+      };
     }
 
     if (currentRole === 'ADMIN' || currentRole === 'SUPER') {
@@ -154,21 +146,32 @@ export class UserService {
       });
 
       const { password, ...userWithoutPassword } = targetUser as any;
-      return { user: userWithoutPassword, guide };
+      return {
+        user: { ...userWithoutPassword, status: userWithoutPassword.status ? 'ACTIU' : 'INACTIU' },
+        guide
+      };
     }
 
     throw new BadRequestException('Aquest usuari ja té rol de GUIDE');
   }
 
   async promoteToAdmin(id: number) {
-    const user = await this.findOne(id);
-
-    const adminRole = await this.prisma.role.findUnique({ where: { code: 'ADMIN' } });
-    if (!adminRole) throw new NotFoundException('Rol ADMIN no trobat');
+    const user = await this.prisma.user.findUnique({
+      where: { id_user: id },
+      include: { role: true }
+    });
+    if (!user) throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
 
     if ((user as any).role?.code === 'SUPER') {
       throw new BadRequestException('No es pot canviar el rol d\'un SUPER');
     }
+
+    if ((user as any).role?.code === 'ADMIN') {
+      throw new BadRequestException('Aquest usuari ja és ADMIN');
+    }
+
+    const adminRole = await this.prisma.role.findUnique({ where: { code: 'ADMIN' } });
+    if (!adminRole) throw new NotFoundException('Rol ADMIN no trobat');
 
     const updatedUser = await this.prisma.user.update({
       where: { id_user: id },
@@ -177,7 +180,7 @@ export class UserService {
     });
 
     const { password, ...userWithoutPassword } = updatedUser;
-    return userWithoutPassword;
+    return { ...userWithoutPassword, status: userWithoutPassword.status ? 'ACTIU' : 'INACTIU' };
   }
 
   async remove(id: number, currentUser: any) {
@@ -185,7 +188,6 @@ export class UserService {
       where: { id_user: id },
       include: { role: true }
     });
-
     if (!targetUser) throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
 
     const currentRole = currentUser.role.code;
@@ -203,6 +205,6 @@ export class UserService {
     });
 
     const { password, ...userWithoutPassword } = updatedUser;
-    return userWithoutPassword;
+    return { ...userWithoutPassword, status: 'INACTIU' };
   }
 }

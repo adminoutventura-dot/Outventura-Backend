@@ -1,4 +1,3 @@
-// guide.service.ts
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateGuideDto } from './dto/create-guide.dto';
@@ -19,34 +18,53 @@ export class GuideService {
     });
     if (existing) throw new ConflictException('Aquest usuari ja és guia');
 
-    return this.prisma.guide.create({
+    const guide = await this.prisma.guide.create({
       data: dto,
-      include: { user: { select: { name: true, surname: true, email: true } } }
+      include: { user: { select: { name: true, surname: true, email: true, status: true } } }
     });
+
+    return {
+      ...guide,
+      user: { ...guide.user, status: guide.user.status ? 'ACTIU' : 'INACTIU' }
+    };
   }
 
   async findAll() {
-    return this.prisma.guide.findMany({
-      include: { user: { select: { name: true, surname: true, email: true } } }
+    const guides = await this.prisma.guide.findMany({
+      include: { user: { select: { name: true, surname: true, email: true, status: true } } }
     });
+
+    return guides.map(guide => ({
+      ...guide,
+      user: { ...guide.user, status: guide.user.status ? 'ACTIU' : 'INACTIU' }
+    }));
   }
 
   async findOne(id: number) {
     const guide = await this.prisma.guide.findUnique({
       where: { id_guide: id },
-      include: { user: { select: { name: true, surname: true, email: true } } }
+      include: { user: { select: { name: true, surname: true, email: true, status: true } } }
     });
     if (!guide) throw new NotFoundException('Guia no trobat');
-    return guide;
+
+    return {
+      ...guide,
+      user: { ...guide.user, status: guide.user.status ? 'ACTIU' : 'INACTIU' }
+    };
   }
 
   async update(id: number, dto: UpdateGuideDto) {
     await this.findOne(id);
-    return this.prisma.guide.update({
+    const guide = await this.prisma.guide.update({
       where: { id_guide: id },
       data: dto,
-      include: { user: { select: { name: true, surname: true, email: true } } }
+      include: { user: { select: { name: true, surname: true, email: true, status: true } } }
     });
+
+    return {
+      ...guide,
+      user: { ...guide.user, status: guide.user.status ? 'ACTIU' : 'INACTIU' }
+    };
   }
 
   async remove(id: number) {
