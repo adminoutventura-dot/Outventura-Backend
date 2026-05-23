@@ -1,5 +1,4 @@
-// booking-status.service.ts
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBookingStatusDto } from './dto/create-booking-status.dto';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
@@ -38,9 +37,18 @@ export class BookingStatusService {
   }
 
   async remove(id: number) {
-    await this.findOne(id);
-    return this.prisma.bookingStatus.delete({
-      where: { id_book_status: id }
+    const status = await this.prisma.bookingStatus.findUnique({
+      where: { id_book_status: id },
+      include: { _count: { select: { bookings: true } } }
     });
+    if (!status) throw new NotFoundException('Estat de reserva no trobat');
+
+    if (status._count.bookings > 0) {
+      throw new BadRequestException(
+        `No es pot eliminar l'estat perquè té ${status._count.bookings} reserva(es) assignada(es)`
+      );
+    }
+
+    return this.prisma.bookingStatus.delete({ where: { id_book_status: id } });
   }
 }

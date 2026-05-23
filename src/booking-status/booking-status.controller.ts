@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { BookingStatusService } from './booking-status.service';
 import { CreateBookingStatusDto } from './dto/create-booking-status.dto';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
@@ -40,8 +40,8 @@ export class BookingStatusController {
   @ApiResponse({ status: 200, description: 'Estat retornat correctament.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   @ApiResponse({ status: 404, description: 'Estat no trobat.' })
-  findOne(@Param('id') id: string) {
-    return this.bookingStatusService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.bookingStatusService.findOne(id);
   }
 
   @Patch(':id')
@@ -51,18 +51,19 @@ export class BookingStatusController {
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
   @ApiResponse({ status: 404, description: 'Estat no trobat.' })
-  update(@Param('id') id: string, @Body() dto: UpdateBookingStatusDto) {
-    return this.bookingStatusService.update(+id, dto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateBookingStatusDto) {
+    return this.bookingStatusService.update(id, dto);
   }
 
   @Delete(':id')
   @Roles('SUPER')
   @ApiOperation({ summary: 'Eliminar un estat de reserva' })
   @ApiResponse({ status: 200, description: 'Estat eliminat correctament.' })
+  @ApiResponse({ status: 400, description: 'No es pot eliminar si té reserves assignades.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
   @ApiResponse({ status: 404, description: 'Estat no trobat.' })
-  remove(@Param('id') id: string) {
-    return this.bookingStatusService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.bookingStatusService.remove(id);
   }
 }

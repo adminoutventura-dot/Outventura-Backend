@@ -1,4 +1,3 @@
-// create-booking-status.dto.ts
 import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
