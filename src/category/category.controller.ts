@@ -61,6 +61,7 @@ export class CategoryController {
   @Roles('SUPER')
   @ApiOperation({ summary: 'Eliminar una categoria' })
   @ApiResponse({ status: 200, description: 'Categoria eliminada correctament.' })
+  @ApiResponse({ status: 400, description: 'No es pot eliminar si té material o activitats assignades.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
   @ApiResponse({ status: 404, description: 'Categoria no trobada.' })

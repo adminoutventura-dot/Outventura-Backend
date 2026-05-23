@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsInt, Min, Max, IsDateString, IsOptional } from 'class-validator';
 
 export class CreateActivityDto {
@@ -7,7 +7,7 @@ export class CreateActivityDto {
     @IsNotEmpty()
     title!: string;
 
-    @ApiProperty({ example: 'Ruta guiada per les fonts naturals del riu.', required: false })
+    @ApiPropertyOptional({ example: 'Ruta guiada per les fonts naturals del riu.' })
     @IsString()
     @IsOptional()
     description?: string;
@@ -31,7 +31,7 @@ export class CreateActivityDto {
     @Min(1)
     max_participants!: number;
 
-    @ApiProperty({ example: 'Plaça de l’Ajuntament', required: false })
+    @ApiPropertyOptional({ example: 'Plaça de l\'Ajuntament' })
     @IsString()
     @IsOptional()
     start_end_point?: string;

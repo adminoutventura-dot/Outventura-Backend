@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Query } from '@nestjs/common';
 import { ActivityService } from './activity.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -18,8 +18,10 @@ export class ActivityController {
   @Roles('SUPER', 'ADMIN', 'GUIDE')
   @ApiOperation({ summary: 'Crear activitat' })
   @ApiResponse({ status: 201, description: 'Activitat creada correctament.' })
+  @ApiResponse({ status: 400, description: 'El guia seleccionat està inactiu.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
+  @ApiResponse({ status: 404, description: 'Guia no trobat.' })
   create(@Body() dto: CreateActivityDto) {
     return this.activitiesService.create(dto);
   }
@@ -42,10 +44,21 @@ export class ActivityController {
   @Get()
   @UseGuards(OptionalJwtGuard, RolesGuard)
   @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER', 'GUEST')
-  @ApiOperation({ summary: 'Llistar totes les activitats' })
+  @ApiOperation({ summary: 'Llistar activitats amb filtres opcionals' })
+  @ApiQuery({ name: 'guideId', required: false, type: Number, description: 'Filtrar per guia' })
+  @ApiQuery({ name: 'difficulty', required: false, type: Number, description: 'Filtrar per dificultat' })
+  @ApiQuery({ name: 'categoryId', required: false, type: Number, description: 'Filtrar per categoria' })
   @ApiResponse({ status: 200, description: 'Llista d\'activitats retornada.' })
-  findAll() {
-    return this.activitiesService.findAll();
+  findAll(
+    @Query('guideId') guideId?: string,
+    @Query('difficulty') difficulty?: string,
+    @Query('categoryId') categoryId?: string,
+  ) {
+    return this.activitiesService.findAll({
+      guideId: guideId ? +guideId : undefined,
+      difficulty: difficulty ? +difficulty : undefined,
+      categoryId: categoryId ? +categoryId : undefined,
+    });
   }
 
   @Get(':id')
@@ -63,6 +76,7 @@ export class ActivityController {
   @Roles('SUPER', 'ADMIN', 'GUIDE')
   @ApiOperation({ summary: 'Actualitzar una activitat' })
   @ApiResponse({ status: 200, description: 'Activitat actualitzada correctament.' })
+  @ApiResponse({ status: 400, description: 'El guia seleccionat està inactiu.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
   @ApiResponse({ status: 404, description: 'Activitat no trobada.' })
