@@ -24,7 +24,7 @@ async function seedRoles(): Promise<void> {
         await prisma.role.upsert({
             where: { code: role.code },
             update: {},
-            create: role,
+            create: role
         });
     }
 
@@ -34,25 +34,13 @@ async function seedRoles(): Promise<void> {
 async function seedUsers(): Promise<void> {
     console.log('🌱 User seeding ...');
 
-    const superRole = await prisma.role.findUnique({
-        where: { code: 'SUPER' },
-    });
-
-    const adminRole = await prisma.role.findUnique({
-        where: { code: 'ADMIN' },
-    });
-
-    const guideRole = await prisma.role.findUnique({
-        where: { code: 'GUIDE' },
-    });
-
-    const userRole = await prisma.role.findUnique({
-        where: { code: 'USER' },
-    });
-
+    const superRole = await prisma.role.findUnique({ where: { code: 'SUPER' } });
+    const adminRole = await prisma.role.findUnique({ where: { code: 'ADMIN' } });
+    const guideRole = await prisma.role.findUnique({ where: { code: 'GUIDE' } });
+    const userRole = await prisma.role.findUnique({ where: { code: 'USER' } });
 
     if (!superRole || !adminRole || !guideRole || !userRole) {
-        throw new Error('These roles are missing from the database. Please run seedRoles first.');
+        throw new Error('Roles missing. Run seedRoles first.');
     }
 
     const hashedSuper = await bcrypt.hash('superadmin', 10);
@@ -72,7 +60,7 @@ async function seedUsers(): Promise<void> {
         await prisma.user.upsert({
             where: { email: user.email },
             update: {},
-            create: user,
+            create: user
         });
     }
 
@@ -94,32 +82,47 @@ async function seedBookingStatuses(): Promise<void> {
         await prisma.bookingStatus.upsert({
             where: { code: status.code },
             update: {},
-            create: status,
+            create: status
         });
     }
 
     console.log('... end seeding BookingStatus.\n');
 }
 
+async function seedEquipmentStatuses(): Promise<void> {
+    console.log('🌱 EquipmentStatus seeding ...');
+
+    const statuses = [
+        { code: 'AVAILABLE', description: 'El material està disponible per a ser llogat' },
+        { code: 'UNAVAILABLE', description: 'El material no està disponible temporalment' },
+        { code: 'DISCONTINUED', description: 'El material ja no està disponible per a lloguer' },
+    ];
+
+    for (const status of statuses) {
+        await prisma.equipmentStatus.upsert({
+            where: { code: status.code },
+            update: {},
+            create: status
+        });
+    }
+
+    console.log('... end seeding EquipmentStatus.\n');
+}
+
 async function seedGuides(): Promise<void> {
     console.log('🌱 Guide seeding ...');
 
-    const carlosUser = await prisma.user.findUnique({
-        where: { email: 'carlos@guide.com' }
-    });
+    const carlosUser = await prisma.user.findUnique({ where: { email: 'carlos@guide.com' } });
 
-    if (!carlosUser) throw new Error('Usuari guia no trobat. Executa seedUsers primer.');
+    if (!carlosUser) {
+        throw new Error('Guide user not found. Run seedUsers first.');
+    }
 
     await prisma.guide.upsert({
         where: { userId: carlosUser.id_user },
         update: {},
-        create: {
-            userId: carlosUser.id_user,
-            specialty: 'Senderisme',
-            credentials: 'Llicència federativa núm. 1234',
-        }
+        create: { userId: carlosUser.id_user, specialty: 'Senderisme', credentials: 'Llicència federativa núm. 1234' }
     });
-
     console.log('... end seeding Guide.\n');
 }
 
@@ -127,18 +130,18 @@ async function seedCategories(): Promise<void> {
     console.log('🌱 Category seeding ...');
 
     const categories = [
-        { code: 'AQUATICA', description: 'Activitats aquàtiques' },
-        { code: 'NEU', description: 'Activitats de neu' },
-        { code: 'SENDERISME', description: 'Senderisme i rutes' },
-        { code: 'MUNTANYA', description: 'Activitats de muntanya' },
-        { code: 'ACAMPADA', description: 'Acampada i bivac' },
+        { code: 'AQUATIC', description: 'Activitats aquàtiques' },
+        { code: 'SNOW', description: 'Activitats de neu' },
+        { code: 'HIKING', description: 'Senderisme i rutes' },
+        { code: 'MOUNTAIN', description: 'Activitats de muntanya' },
+        { code: 'CAMPING', description: 'Acampada i bivac' },
     ];
 
     for (const category of categories) {
         await prisma.category.upsert({
             where: { code: category.code },
             update: {},
-            create: category,
+            create: category
         });
     }
 
@@ -149,11 +152,12 @@ async function seedActivities(): Promise<void> {
     console.log('🌱 Activity seeding ...');
 
     const guide = await prisma.guide.findFirst();
-    if (!guide) throw new Error('Cal tenir almenys un Guide. Executa seedGuides primer.');
 
-    const senderismeCategory = await prisma.category.findUnique({
-        where: { code: 'SENDERISME' }
-    });
+    if (!guide) {
+        throw new Error('No guides found. Run seedGuides first.');
+    }
+
+    const hikingCategory = await prisma.category.findUnique({ where: { code: 'HIKING' } });
 
     const activity = await prisma.activity.upsert({
         where: { id_activity: 1 },
@@ -170,36 +174,82 @@ async function seedActivities(): Promise<void> {
         }
     });
 
-    if (senderismeCategory) {
+    if (hikingCategory) {
         await prisma.activity.update({
             where: { id_activity: activity.id_activity },
-            data: {
-                categories: { connect: { id_category: senderismeCategory.id_category } }
-            }
+            data: { categories: { connect: { id_category: hikingCategory.id_category } } }
         });
     }
 
     console.log('... end seeding Activity.\n');
 }
 
+async function seedEquipment(): Promise<void> {
+    console.log('🌱 Equipment seeding ...');
+
+    const availableStatus = await prisma.equipmentStatus.findUnique({ where: { code: 'AVAILABLE' } });
+
+    if (!availableStatus) {
+        throw new Error('AVAILABLE status not found. Run seedEquipmentStatuses first.');
+    }
+
+    const hikingCategory = await prisma.category.findUnique({ where: { code: 'HIKING' } });
+
+    const equipment = [
+        {
+            title: 'Trekking poles',
+            description: 'Lightweight aluminium trekking poles, adjustable height',
+            price_per_day: 5.00,
+            units: 10,
+            statusId: availableStatus.id_status
+        },
+        {
+            title: 'Hiking backpack 45L',
+            description: 'Waterproof backpack with ergonomic back system',
+            price_per_day: 8.00,
+            units: 5,
+            statusId: availableStatus.id_status
+        },
+        {
+            title: 'Camping tent 2 people',
+            description: '3-season tent, easy assembly, 2kg',
+            price_per_day: 15.00,
+            units: 3,
+            statusId: availableStatus.id_status
+        },
+    ];
+
+    for (const item of equipment) {
+        const created = await prisma.equipment.create({ data: item });
+
+        if (hikingCategory) {
+            await prisma.equipment.update({
+                where: { id_equipment: created.id_equipment },
+                data: { categories: { connect: { id_category: hikingCategory.id_category } } }
+            });
+        }
+    }
+
+    console.log('... end seeding Equipment.\n');
+}
 
 async function main() {
     try {
         await seedRoles();
         await seedUsers();
         await seedBookingStatuses();
+        await seedEquipmentStatuses();
         await seedGuides();
         await seedCategories();
         await seedActivities();
+        await seedEquipment();
 
-        console.log('Seeding succesfully completed.');
-
+        console.log('Seeding successfully completed.');
     } catch (error) {
         console.error('Seeding failed:', error);
         throw error;
     }
 }
-
 
 main()
     .catch(async (e) => {
