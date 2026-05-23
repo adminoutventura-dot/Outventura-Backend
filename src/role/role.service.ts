@@ -13,7 +13,7 @@ export class RoleService {
     });
 
     if (existingRole) {
-      throw new ConflictException(`The code '${dto.code}' is already in use.`);
+      throw new ConflictException(`El codi '${dto.code}' ja està en ús.`);
     }
 
     return this.prisma.role.create({
@@ -35,7 +35,11 @@ export class RoleService {
     const role = await this.prisma.role.findUnique({
       where: { id_role: id },
     });
-    if (!role) throw new NotFoundException(`Role with ID ${id} not found`);
+
+    if (!role) {
+      throw new NotFoundException(`El rol amb ID ${id} no existeix`);
+    }
+
     return role;
   }
 
@@ -51,9 +55,7 @@ export class RoleService {
       });
 
       if (duplicateCode) {
-        throw new ConflictException(
-          `Failed to update role: The code '${dto.code}' is already in use.`,
-        );
+        throw new ConflictException(`No s'ha pogut actualitzar: el codi '${dto.code}' ja està en ús.`);
       }
     }
 
@@ -74,13 +76,11 @@ export class RoleService {
     });
 
     if (!role) {
-      throw new NotFoundException(`The role with ID ${id} does not exist.`);
+      throw new NotFoundException(`El rol amb ID ${id} no existeix.`);
     }
 
     if (role._count.users > 0) {
-      throw new BadRequestException(
-        `Failed to delete role '${role.code}' because it has ${role._count.users} users assigned. Please reassign the users first.`,
-      );
+      throw new BadRequestException(`No es pot eliminar el rol '${role.code}' perquè té ${role._count.users} usuaris assignats.`);
     }
 
     return this.prisma.role.delete({

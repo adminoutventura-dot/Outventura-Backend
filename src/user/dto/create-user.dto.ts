@@ -1,13 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsBoolean, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class CreateUserDto {
-    @ApiProperty({ example: 'User', description: 'Nom de l’usuari' })
+    @ApiProperty({ example: 'User', description: 'Nom de l\'usuari' })
     @IsString()
     @IsNotEmpty()
     name!: string;
 
-    @ApiProperty({ example: 'Test', description: 'Cognoms de l’usuari' })
+    @ApiProperty({ example: 'Test', description: 'Cognoms de l\'usuari' })
     @IsString()
     @IsNotEmpty()
     surname!: string;
@@ -21,17 +21,22 @@ export class CreateUserDto {
     @MinLength(8, { message: 'La contrasenya ha de tenir almenys 8 caràcters' })
     password!: string;
 
-    @ApiProperty({ example: 3, description: 'ID del rol assignat (ha d’existir a la taula Role)' })
+    @ApiProperty({ example: 3, description: 'ID del rol assignat (ha d\'existir a la taula Role)' })
     @IsInt()
     roleId!: number;
 
-    @ApiProperty({ required: false, example: '600123456' })
+    @ApiPropertyOptional({ example: '600123456' })
     @IsString()
     @IsOptional()
     phone?: string;
 
-    @ApiProperty({ required: false, example: 'https://foto.com/perfil.jpg' })
+    @ApiPropertyOptional({ example: 'https://foto.com/perfil.jpg' })
     @IsString()
     @IsOptional()
     photo?: string;
+
+    @ApiPropertyOptional({ example: true, description: 'Estat de l\'usuari' })
+    @IsBoolean()
+    @IsOptional()
+    status?: boolean;
 }

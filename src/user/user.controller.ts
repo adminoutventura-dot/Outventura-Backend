@@ -69,11 +69,7 @@ export class UserController {
   @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
   @ApiResponse({ status: 404, description: 'Usuari no trobat.' })
   @ApiResponse({ status: 409, description: 'El nou email ja està en ús.' })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateUserDto: UpdateUserDto,
-    @CurrentUser() currentUser: any
-  ) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto, @CurrentUser() currentUser: any) {
     return this.userService.update(id, updateUserDto, currentUser);
   }
 
@@ -87,10 +83,7 @@ export class UserController {
   @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
   @ApiResponse({ status: 404, description: 'Usuari no trobat.' })
   @ApiResponse({ status: 409, description: 'L\'usuari ja és guia.' })
-  async promoteToGuide(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: PromoteGuideDto
-  ) {
+  async promoteToGuide(@Param('id', ParseIntPipe) id: number, @Body() dto: PromoteGuideDto) {
     return this.userService.promoteToGuide(id, dto.specialty, dto.credentials);
   }
 

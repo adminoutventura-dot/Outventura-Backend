@@ -11,12 +11,18 @@ export class UserService {
     const existingEmail = await this.prisma.user.findUnique({
       where: { email: dto.email }
     });
-    if (existingEmail) throw new ConflictException('Aquest correu ja està registrat');
+
+    if (existingEmail) {
+      throw new ConflictException('Aquest correu ja està registrat');
+    }
 
     const roleExists = await this.prisma.role.findUnique({
       where: { id_role: dto.roleId }
     });
-    if (!roleExists) throw new BadRequestException('El rol especificat no existeix');
+
+    if (!roleExists) {
+      throw new BadRequestException('El rol especificat no existeix');
+    }
 
     const user = await this.prisma.user.create({
       data: dto,
@@ -55,7 +61,10 @@ export class UserService {
       where: { id_user: id },
       include: { role: true }
     });
-    if (!user) throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
+
+    if (!user) {
+      throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
+    }
 
     const { password, ...userWithoutPassword } = user;
     return { ...userWithoutPassword, status: userWithoutPassword.status ? 'ACTIU' : 'INACTIU' };
@@ -66,21 +75,55 @@ export class UserService {
       where: { id_user: id },
       include: { role: true }
     });
-    if (!targetUser) throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
+
+    if (!targetUser) {
+      throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
+    }
 
     const currentRole = currentUser.role.code;
     const targetRole = targetUser.role.code;
 
-    if (currentRole !== 'SUPER') {
-      if (currentRole === 'ADMIN') {
-        if (dto.roleId) throw new ForbiddenException('Només un SUPER pot canviar el rol d\'un usuari');
-        if (targetRole === 'SUPER') throw new ForbiddenException('No pots editar un SUPER');
-        if (targetRole === 'ADMIN' && targetUser.id_user !== currentUser.id_user) {
-          throw new ForbiddenException('No pots editar un altre ADMIN');
-        }
-      } else {
-        if (dto.roleId) throw new ForbiddenException('No tens permisos per canviar el rol');
-        if (id !== currentUser.id_user) throw new ForbiddenException('Només pots editar el teu propi perfil');
+    if (currentRole === 'SUPER') {
+
+      if (dto.status !== undefined && targetRole === 'SUPER' && targetUser.id_user !== currentUser.id_user) {
+        throw new ForbiddenException('No pots canviar l\'estat d\'un altre SUPER.');
+      }
+
+      if (dto.status !== undefined && targetUser.id_user === currentUser.id_user) {
+        throw new ForbiddenException('Per desactivar el teu compte usa l\'opció d\'eliminar usuari.');
+      }
+
+    }
+    else if (currentRole === 'ADMIN') {
+      if (dto.roleId) {
+        throw new ForbiddenException('Només un SUPER pot canviar el rol d\'un usuari');
+      }
+
+      if (dto.status !== undefined) {
+        throw new ForbiddenException('Només un SUPER pot canviar l\'estat d\'un usuari');
+      }
+
+      if (targetRole === 'SUPER') {
+        throw new ForbiddenException('No pots editar un SUPER');
+      }
+
+      if (targetRole === 'ADMIN' && targetUser.id_user !== currentUser.id_user) {
+        throw new ForbiddenException('No pots editar un altre ADMIN');
+      }
+
+    }
+    else {
+      // GUIDE i USER
+      if (dto.roleId) {
+        throw new ForbiddenException('No tens permisos per canviar el rol');
+      }
+
+      if (dto.status !== undefined) {
+        throw new ForbiddenException('No tens permisos per canviar l\'estat');
+      }
+
+      if (id !== currentUser.id_user) {
+        throw new ForbiddenException('Només pots editar el teu propi perfil');
       }
     }
 
@@ -88,12 +131,17 @@ export class UserService {
       const emailConflict = await this.prisma.user.findFirst({
         where: { email: dto.email, NOT: { id_user: id } }
       });
-      if (emailConflict) throw new ConflictException('L\'email ja està sent usat per un altre usuari');
+
+      if (emailConflict) {
+        throw new ConflictException('L\'email ja està sent usat per un altre usuari');
+      }
     }
 
     if (dto.roleId) {
       const roleExists = await this.prisma.role.findUnique({ where: { id_role: dto.roleId } });
-      if (!roleExists) throw new BadRequestException('El rol especificat no existeix');
+      if (!roleExists) {
+        throw new BadRequestException('El rol especificat no existeix');
+      }
     }
 
     const updatedUser = await this.prisma.user.update({
@@ -111,16 +159,23 @@ export class UserService {
       where: { id_user: id },
       include: { role: true }
     });
-    if (!targetUser) throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
+
+    if (!targetUser) {
+      throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
+    }
 
     const existingGuide = await this.prisma.guide.findUnique({ where: { userId: id } });
-    if (existingGuide) throw new ConflictException('Aquest usuari ja té perfil de guia');
+    if (existingGuide) {
+      throw new ConflictException('Aquest usuari ja té perfil de guia');
+    }
 
     const currentRole = (targetUser as any).role.code;
 
     if (currentRole === 'USER') {
       const guideRole = await this.prisma.role.findUnique({ where: { code: 'GUIDE' } });
-      if (!guideRole) throw new NotFoundException('Rol GUIDE no trobat');
+      if (!guideRole) {
+        throw new NotFoundException('Rol GUIDE no trobat');
+      }
 
       const [updatedUser, guide] = await this.prisma.$transaction([
         this.prisma.user.update({
@@ -160,7 +215,10 @@ export class UserService {
       where: { id_user: id },
       include: { role: true }
     });
-    if (!user) throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
+
+    if (!user) {
+      throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
+    }
 
     if ((user as any).role?.code === 'SUPER') {
       throw new BadRequestException('No es pot canviar el rol d\'un SUPER');
@@ -171,7 +229,9 @@ export class UserService {
     }
 
     const adminRole = await this.prisma.role.findUnique({ where: { code: 'ADMIN' } });
-    if (!adminRole) throw new NotFoundException('Rol ADMIN no trobat');
+    if (!adminRole) {
+      throw new NotFoundException('Rol ADMIN no trobat');
+    }
 
     const updatedUser = await this.prisma.user.update({
       where: { id_user: id },
@@ -188,14 +248,21 @@ export class UserService {
       where: { id_user: id },
       include: { role: true }
     });
-    if (!targetUser) throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
+
+    if (!targetUser) {
+      throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
+    }
 
     const currentRole = currentUser.role.code;
     const targetRole = (targetUser as any).role.code;
 
     if (currentRole !== 'SUPER') {
-      if (targetRole === 'SUPER') throw new ForbiddenException('No pots desactivar un SUPER');
-      if (targetRole === 'ADMIN') throw new ForbiddenException('Només un SUPER pot desactivar un ADMIN');
+      if (targetRole === 'SUPER') {
+        throw new ForbiddenException('No pots desactivar un SUPER');
+      }
+      if (targetRole === 'ADMIN') {
+        throw new ForbiddenException('Només un SUPER pot desactivar un ADMIN');
+      }
     }
 
     const updatedUser = await this.prisma.user.update({
