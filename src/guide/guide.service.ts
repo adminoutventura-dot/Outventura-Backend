@@ -11,12 +11,18 @@ export class GuideService {
     const user = await this.prisma.user.findUnique({
       where: { id_user: dto.userId }
     });
-    if (!user) throw new NotFoundException('Usuari no trobat');
+
+    if (!user) {
+      throw new NotFoundException('Usuari no trobat');
+    }
 
     const existing = await this.prisma.guide.findUnique({
       where: { userId: dto.userId }
     });
-    if (existing) throw new ConflictException('Aquest usuari ja és guia');
+
+    if (existing) {
+      throw new ConflictException('Aquest usuari ja és guia');
+    }
 
     const guide = await this.prisma.guide.create({
       data: dto,
@@ -45,7 +51,10 @@ export class GuideService {
       where: { id_guide: id },
       include: { user: { select: { name: true, surname: true, email: true, status: true } } }
     });
-    if (!guide) throw new NotFoundException('Guia no trobat');
+
+    if (!guide) {
+      throw new NotFoundException('Guia no trobat');
+    }
 
     return {
       ...guide,
@@ -68,7 +77,40 @@ export class GuideService {
   }
 
   async remove(id: number) {
-    await this.findOne(id);
-    return this.prisma.guide.delete({ where: { id_guide: id } });
+    const guide = await this.prisma.guide.findUnique({
+      where: { id_guide: id },
+      include: { user: { include: { role: true } } }
+    });
+
+    if (!guide) {
+      throw new NotFoundException('Guia no trobat');
+    }
+
+    const userRole = guide.user.role.code;
+
+    // Si el rol és GUIDE → elimina perfil i torna rol a USER
+    if (userRole === 'GUIDE') {
+      const userRoleEntity = await this.prisma.role.findUnique({ where: { code: 'USER' } });
+      if (!userRoleEntity) {
+        throw new NotFoundException('Rol USER no trobat');
+      }
+
+      await this.prisma.$transaction([
+        this.prisma.guide.delete({ where: { id_guide: id } }),
+        this.prisma.user.update({
+          where: { id_user: guide.userId },
+          data: { roleId: userRoleEntity.id_role }
+        })
+      ]);
+
+      return { message: 'Perfil de guia eliminat i rol tornat a USER correctament.' };
+    }
+
+    // Si és ADMIN o SUPER → elimina només el perfil, manté el rol
+    if (userRole === 'ADMIN' || userRole === 'SUPER') {
+      await this.prisma.guide.delete({ where: { id_guide: id } });
+
+      return { message: 'Perfil de guia eliminat. El rol s\'ha mantingut.' };
+    }
   }
 }
