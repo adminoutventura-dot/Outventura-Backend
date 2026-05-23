@@ -1,6 +1,5 @@
-// create-equipment-status.dto.ts
 import { IsNotEmpty, IsString, IsOptional, MaxLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateEquipmentStatusDto {
     @ApiProperty({
@@ -13,10 +12,9 @@ export class CreateEquipmentStatusDto {
     @MaxLength(20)
     code!: string;
 
-    @ApiProperty({
+    @ApiPropertyOptional({
         description: 'Explicació detallada de què significa aquest estat',
         example: 'El material està en perfecte estat i llest per a ser llogat',
-        required: false,
         maxLength: 255,
     })
     @IsString()

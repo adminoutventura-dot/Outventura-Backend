@@ -1,20 +1,18 @@
-// create-equipment.dto.ts
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsNumber, IsOptional, Min, IsInt } from 'class-validator';
 
 export class CreateEquipmentDto {
     @ApiProperty({
         description: 'Títol o nom del material',
-        example: 'Bicicleta de muntanya Trek Fuel EX',
+        example: 'Bicicleta de muntanya Trek Fuel EX'
     })
     @IsString()
     @IsNotEmpty()
     title!: string;
 
-    @ApiProperty({
+    @ApiPropertyOptional({
         description: 'Descripció detallada del material',
-        example: 'Talla L, frens de disc hidràulics, suspensió davantera',
-        required: false,
+        example: 'Talla L, frens de disc hidràulics'
     })
     @IsString()
     @IsOptional()
@@ -22,7 +20,7 @@ export class CreateEquipmentDto {
 
     @ApiProperty({
         description: 'Preu de lloguer per dia',
-        example: 25.50,
+        example: 25.50
     })
     @IsNumber()
     @Min(0)
@@ -31,15 +29,15 @@ export class CreateEquipmentDto {
     @ApiProperty({
         description: 'Unitats totals disponibles en stock',
         example: 10,
-        default: 1,
+        default: 1
     })
     @IsInt()
     @Min(1)
     units!: number;
 
     @ApiProperty({
-        description: 'ID de l\'estat del material (FK)',
-        example: 1,
+        description: 'ID de l\'estat del material',
+        example: 1
     })
     @IsInt()
     @IsNotEmpty()
