@@ -40,7 +40,6 @@ export class BookingLineService {
 
     if (dto.activityId) {
       const existingActivity = (booking.lines as any[]).find(l => l.activityId);
-
       if (existingActivity) {
         throw new BadRequestException(
           'Una reserva només pot contenir una activitat. Crea una nova reserva per a una altra activitat.'
@@ -71,18 +70,74 @@ export class BookingLineService {
         });
 
         if (guideProfile && activity.guideId === guideProfile.id_guide) {
-          throw new ForbiddenException('No pots reservar una activitat de la qual ets el guia');
+          // És la seva activitat → no pot reservar per a ell mateix
+          if ((booking as any).userId === currentUser.id_user) {
+            throw new ForbiddenException('No pots reservar una activitat de la qual ets el guia');
+          }
+          // Pot apuntar altres usuaris si falten > 3 dies
+          if (daysUntilActivity < 3) {
+            throw new BadRequestException(
+              'No pots apuntar usuaris a la teva activitat. Falten menys de 3 dies. Consulta amb un administrador.'
+            );
+          }
+          // Comprova duplicat per a l'usuari de la reserva
+          const duplicateForUser = await this.prisma.bookingLine.findFirst({
+            where: {
+              activityId: dto.activityId,
+              booking: {
+                userId: (booking as any).userId,
+                status: { code: { in: ['PENDING', 'ACCEPTED'] } }
+              }
+            }
+          });
+
+          if (duplicateForUser) {
+            throw new BadRequestException(
+              `L\'usuari ja té una reserva activa per a aquesta activitat (reserva #${duplicateForUser.bookingId}).`
+            );
+          }
+          // Comprova conflicte de dates per a l'usuari de la reserva
+          const conflictForUser = await this.prisma.bookingLine.findFirst({
+            where: {
+              activityId: { not: dto.activityId },
+              activity: { isNot: null },
+              booking: {
+                userId: (booking as any).userId,
+                status: { code: { in: ['PENDING', 'ACCEPTED'] } },
+                AND: [
+                  { init_date: { lte: activity.end_date } },
+                  { end_date: { gte: activity.init_date } }
+                ]
+              }
+            },
+            include: { booking: true }
+          });
+
+          if (conflictForUser) {
+            throw new BadRequestException(
+              `L\'usuari ja té una altra activitat reservada per a aquestes dates (reserva #${conflictForUser.bookingId}).`
+            );
+          }
+        }
+        else {
+          // No és la seva activitat → restriccions normals de GUIDE
+          if (daysUntilActivity < 3) {
+            throw new BadRequestException(
+              'No es pot reservar aquesta activitat. Falten menys de 3 dies. Contacta amb un administrador.'
+            );
+          }
         }
       }
 
-      if (['USER', 'GUIDE'].includes(currentRole)) {
+      if (currentRole === 'USER') {
         if (daysUntilActivity < 3) {
           throw new BadRequestException(
             'No es pot reservar aquesta activitat. Falten menys de 3 dies. Contacta amb un administrador.'
           );
         }
       }
-      else if (['ADMIN', 'SUPER'].includes(currentRole)) {
+
+      if (['ADMIN', 'SUPER'].includes(currentRole)) {
         if (hoursUntilActivity < 12) {
           throw new BadRequestException(
             'No es pot reservar aquesta activitat. Falten menys de 12h per a l\'inici.'

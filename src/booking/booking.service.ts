@@ -168,17 +168,19 @@ export class BookingService {
     }
 
     if (newStatusCode === 'CANCELLED') {
-      // SUPER pot cancelar sempre
-      if (currentRole !== 'SUPER') {
+      if (currentRole === 'SUPER') {
+        // SUPER pot cancelar sempre sense restriccions
+      }
+      else if (currentRole === 'ADMIN') {
         // ADMIN pot cancelar totes amb restricció de temps
-        // GUIDE/USER només poden cancelar les seves amb restricció de temps i que siguen seues
-        if (['GUIDE', 'USER'].includes(currentRole)) {
-          if ((booking as any).userId !== currentUser.id_user) {
-            throw new ForbiddenException(
-              'No tens permisos per cancelar aquesta reserva.'
-            );
-          }
+        await this.validateCancellationTime(booking);
+      }
+      else {
+        // GUIDE i USER → només les seves + restricció de temps
+        if ((booking as any).userId !== currentUser.id_user) {
+          throw new ForbiddenException('No tens permisos per cancelar aquesta reserva.');
         }
+
         await this.validateCancellationTime(booking);
       }
     }
@@ -251,6 +253,7 @@ export class BookingService {
     }
     else {
       const hoursUntilStart = (new Date(booking.init_date).getTime() - now.getTime()) / (1000 * 60 * 60);
+
       if (hoursUntilStart < 24) {
         throw new BadRequestException(
           'No pots cancelar aquesta reserva. Falten menys de 24h per a l\'inici. Contacta amb un administrador.'
