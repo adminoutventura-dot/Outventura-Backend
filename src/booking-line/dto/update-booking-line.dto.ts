@@ -7,9 +7,4 @@ export class UpdateBookingLineDto {
     @IsOptional()
     @Min(1)
     quantity?: number;
-
-    @ApiPropertyOptional({ description: 'Preu en el moment de la reserva', example: 29.99 })
-    @IsNumber()
-    @IsOptional()
-    price_at_moment?: number;
 }

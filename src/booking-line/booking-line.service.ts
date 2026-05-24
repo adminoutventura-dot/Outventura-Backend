@@ -32,14 +32,18 @@ export class BookingLineService {
     }
 
     const blockedStatuses = ['CANCELLED', 'FINISHED', 'IN_PROGRESS'];
+
     if (blockedStatuses.includes((booking.status as any).code)) {
       throw new BadRequestException(
         `No es poden afegir línies a una reserva en estat ${(booking.status as any).code}`
       );
     }
 
+    let price_at_moment = 0;
+
     if (dto.activityId) {
       const existingActivity = (booking.lines as any[]).find(l => l.activityId);
+
       if (existingActivity) {
         throw new BadRequestException(
           'Una reserva només pot contenir una activitat. Crea una nova reserva per a una altra activitat.'
@@ -70,17 +74,16 @@ export class BookingLineService {
         });
 
         if (guideProfile && activity.guideId === guideProfile.id_guide) {
-          // És la seva activitat → no pot reservar per a ell mateix
           if ((booking as any).userId === currentUser.id_user) {
             throw new ForbiddenException('No pots reservar una activitat de la qual ets el guia');
           }
-          // Pot apuntar altres usuaris si falten > 3 dies
+
           if (daysUntilActivity < 3) {
             throw new BadRequestException(
               'No pots apuntar usuaris a la teva activitat. Falten menys de 3 dies. Consulta amb un administrador.'
             );
           }
-          // Comprova duplicat per a l'usuari de la reserva
+
           const duplicateForUser = await this.prisma.bookingLine.findFirst({
             where: {
               activityId: dto.activityId,
@@ -96,7 +99,6 @@ export class BookingLineService {
               `L\'usuari ja té una reserva activa per a aquesta activitat (reserva #${duplicateForUser.bookingId}).`
             );
           }
-          // Comprova conflicte de dates per a l'usuari de la reserva
           const conflictForUser = await this.prisma.bookingLine.findFirst({
             where: {
               activityId: { not: dto.activityId },
@@ -120,7 +122,6 @@ export class BookingLineService {
           }
         }
         else {
-          // No és la seva activitat → restriccions normals de GUIDE
           if (daysUntilActivity < 3) {
             throw new BadRequestException(
               'No es pot reservar aquesta activitat. Falten menys de 3 dies. Contacta amb un administrador.'
@@ -145,16 +146,20 @@ export class BookingLineService {
         }
       }
 
-      const existingParticipants = await this.prisma.bookingLine.count({
+      // Validació aforament sumant quantity
+      const existingParticipants = await this.prisma.bookingLine.aggregate({
         where: {
           activityId: dto.activityId,
           booking: { status: { code: { in: ['PENDING', 'ACCEPTED', 'IN_PROGRESS'] } } }
-        }
+        },
+        _sum: { quantity: true }
       });
 
-      if (existingParticipants >= activity.max_participants) {
+      const totalParticipants = existingParticipants._sum?.quantity ?? 0;
+
+      if (totalParticipants + dto.quantity > activity.max_participants) {
         throw new BadRequestException(
-          `L\'activitat ha assolit l\'aforament màxim de ${activity.max_participants} participants`
+          `No hi ha suficients places disponibles. Places lliures: ${activity.max_participants - totalParticipants}`
         );
       }
 
@@ -199,11 +204,10 @@ export class BookingLineService {
 
       await this.prisma.booking.update({
         where: { id_booking: dto.bookingId },
-        data: {
-          init_date: activity.init_date,
-          end_date: activity.end_date,
-        }
+        data: { init_date: activity.init_date, end_date: activity.end_date }
       });
+
+      price_at_moment = 0;
     }
 
     if (dto.equipmentId) {
@@ -236,13 +240,19 @@ export class BookingLineService {
           `No hi ha suficients unitats disponibles. Unitats en stock: ${equipment.units}`
         );
       }
+
+      const initDate = new Date((booking as any).init_date);
+      const endDate = new Date((booking as any).end_date);
+      const days = Math.max(1, Math.ceil((endDate.getTime() - initDate.getTime()) / (1000 * 60 * 60 * 24)));
+
+      price_at_moment = Number(equipment.price_per_day) * dto.quantity * days;
     }
 
     const line = await this.prisma.bookingLine.create({
       data: {
         booking: { connect: { id_booking: dto.bookingId } },
         quantity: dto.quantity,
-        price_at_moment: dto.price_at_moment,
+        price_at_moment,
         ...(dto.equipmentId && { equipment: { connect: { id_equipment: dto.equipmentId } } }),
         ...(dto.activityId && { activity: { connect: { id_activity: dto.activityId } } }),
       },
@@ -291,14 +301,53 @@ export class BookingLineService {
     });
 
     const statusCode = (booking?.status as any).code;
-
     if (['IN_PROGRESS', 'FINISHED', 'CANCELLED'].includes(statusCode)) {
       throw new BadRequestException(
         `No es pot modificar una línia d\'una reserva en estat ${statusCode}`
       );
     }
 
-    if (dto.quantity && line.equipmentId) {
+    let newPriceAtMoment = Number(line.price_at_moment);
+
+    if (dto.quantity !== undefined && line.activityId) {
+      const now = new Date();
+      const activity = await this.prisma.activity.findUnique({
+        where: { id_activity: line.activityId }
+      });
+
+      if (!activity) {
+        throw new NotFoundException('Activitat no trobada');
+      }
+
+      const hoursUntilActivity = (new Date(activity.init_date).getTime() - now.getTime()) / (1000 * 60 * 60);
+      if (hoursUntilActivity < 48) {
+        throw new BadRequestException(
+          'No es pot modificar la quantitat. Falten menys de 48h per a l\'inici de l\'activitat.'
+        );
+      }
+
+      const existingParticipants = await this.prisma.bookingLine.aggregate({
+        where: {
+          activityId: line.activityId,
+          id_line: { not: id },
+          booking: { status: { code: { in: ['PENDING', 'ACCEPTED', 'IN_PROGRESS'] } } }
+        },
+        _sum: { quantity: true }
+      });
+
+      const totalParticipants = existingParticipants._sum?.quantity ?? 0;
+
+      if (totalParticipants + dto.quantity > activity.max_participants) {
+        throw new BadRequestException(
+          `No hi ha suficients places disponibles. Places lliures: ${activity.max_participants - totalParticipants}`
+        );
+      }
+
+      // L'activitat no té preu, es manté a 0
+      newPriceAtMoment = 0;
+    }
+
+    if (dto.quantity !== undefined && line.equipmentId) {
       const now = new Date();
       const hoursUntilStart = (new Date((booking as any).init_date).getTime() - now.getTime()) / (1000 * 60 * 60);
 
@@ -312,16 +361,29 @@ export class BookingLineService {
         where: { id_equipment: line.equipmentId }
       });
 
-      if (equipment && dto.quantity > equipment.units) {
+      if (!equipment) {
+        throw new NotFoundException('Material no trobat');
+      }
+
+      if (dto.quantity > equipment.units) {
         throw new BadRequestException(
           `No hi ha suficients unitats disponibles. Unitats en stock: ${equipment.units}`
         );
       }
+
+      const initDate = new Date((booking as any).init_date);
+      const endDate = new Date((booking as any).end_date);
+      const days = Math.max(1, Math.ceil((endDate.getTime() - initDate.getTime()) / (1000 * 60 * 60 * 24)));
+
+      newPriceAtMoment = Number(equipment.price_per_day) * dto.quantity * days;
     }
 
     const updated = await this.prisma.bookingLine.update({
       where: { id_line: id },
-      data: dto,
+      data: {
+        quantity: dto.quantity,
+        price_at_moment: newPriceAtMoment
+      },
       include: { equipment: true, activity: true }
     });
 

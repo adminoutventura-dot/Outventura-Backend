@@ -6,10 +6,6 @@ export class CreateBookingLineDto {
     @IsInt()
     bookingId!: number;
 
-    @ApiProperty({ description: 'Preu en el moment de la reserva', example: 25.99 })
-    @IsNumber()
-    price_at_moment!: number;
-
     @ApiProperty({ description: 'Quantitat', example: 1 })
     @IsInt()
     @Min(1)
