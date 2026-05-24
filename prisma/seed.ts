@@ -284,20 +284,20 @@ async function seedEquipment(): Promise<void> {
 
     const equipment = [
         // HIKING
-        { title: 'Trekking poles', description: 'Lightweight aluminium trekking poles, adjustable height', price_per_day: 5.00, units: 10, statusId: availableStatus.id_status, category: hikingCat },
-        { title: 'Hiking backpack 45L', description: 'Waterproof backpack with ergonomic back system', price_per_day: 8.00, units: 5, statusId: availableStatus.id_status, category: hikingCat },
+        { title: 'Bastons de trekking', description: 'Bastons de trekking d\'alumini lleuger, alçada regulable', price_per_day: 5.00, units: 10, statusId: availableStatus.id_status, category: hikingCat },
+        { title: 'Motxilla de senderisme 45L', description: 'Motxilla impermeable amb sistema dorsal ergonòmic', price_per_day: 8.00, units: 5, statusId: availableStatus.id_status, category: hikingCat },
         // MOUNTAIN
-        { title: 'Climbing harness', description: 'Certified climbing harness for via ferrata and sport climbing', price_per_day: 6.00, units: 8, statusId: availableStatus.id_status, category: mountainCat },
-        { title: 'Helmet', description: 'Lightweight multi-sport helmet, adjustable fit', price_per_day: 4.00, units: 8, statusId: availableStatus.id_status, category: mountainCat },
+        { title: 'Arnès d\'escalada', description: 'Arnès homologat per a via ferrata i escalada esportiva', price_per_day: 6.00, units: 8, statusId: availableStatus.id_status, category: mountainCat },
+        { title: 'Casc multiesport', description: 'Casc lleuger multiesport amb ajust regulable', price_per_day: 4.00, units: 8, statusId: availableStatus.id_status, category: mountainCat },
         // AQUATIC
-        { title: 'Kayak individual', description: 'Stable sit-on-top kayak for calm waters, includes paddle', price_per_day: 20.00, units: 6, statusId: availableStatus.id_status, category: aquaticCat },
-        { title: 'Wetsuit 3mm', description: 'Full wetsuit suitable for water temperatures above 18°C', price_per_day: 10.00, units: 8, statusId: availableStatus.id_status, category: aquaticCat },
+        { title: 'Caiac individual', description: 'Caiac estable per a aigües tranquil·les, inclou rem', price_per_day: 20.00, units: 6, statusId: availableStatus.id_status, category: aquaticCat },
+        { title: 'Neoprè 3mm', description: 'Vestit de neoprè complet per a temperatures de l\'aigua per damunt dels 18°C', price_per_day: 10.00, units: 8, statusId: availableStatus.id_status, category: aquaticCat },
         // SNOW
-        { title: 'Snowshoes', description: 'Aluminium snowshoes for varied terrain, adjustable binding', price_per_day: 12.00, units: 10, statusId: availableStatus.id_status, category: snowCat },
-        { title: 'Nordic ski set', description: 'Classic nordic ski set including boots and poles', price_per_day: 18.00, units: 6, statusId: unavailableStatus.id_status, category: snowCat },
+        { title: 'Raquetes de neu', description: 'Raquetes de neu d\'alumini per a terreny variat, fixació regulable', price_per_day: 12.00, units: 10, statusId: availableStatus.id_status, category: snowCat },
+        { title: 'Equip d\'esquí nòrdic', description: 'Equip complet d\'esquí nòrdic clàssic amb botes i bastons', price_per_day: 18.00, units: 6, statusId: unavailableStatus.id_status, category: snowCat },
         // CAMPING
-        { title: 'Camping tent 2 people', description: '3-season tent, easy assembly, 2kg', price_per_day: 15.00, units: 3, statusId: availableStatus.id_status, category: campingCat },
-        { title: 'Sleeping bag -5°C', description: 'Synthetic sleeping bag rated to -5°C, compression sack included', price_per_day: 7.00, units: 8, statusId: availableStatus.id_status, category: campingCat },
+        { title: 'Tenda de campanya 2 persones', description: 'Tenda de 3 estacions, muntatge fàcil, 2kg', price_per_day: 15.00, units: 3, statusId: availableStatus.id_status, category: campingCat },
+        { title: 'Sac de dormir -5°C', description: 'Sac de dormir sintètic homologat fins a -5°C, inclou funda de compressió', price_per_day: 7.00, units: 8, statusId: availableStatus.id_status, category: campingCat },
     ];
 
     for (const { category, ...itemData } of equipment) {
