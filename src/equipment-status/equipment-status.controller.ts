@@ -3,18 +3,17 @@ import { EquipmentStatusService } from './equipment-status.service';
 import { CreateEquipmentStatusDto } from './dto/create-equipment-status.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorators';
 
 @ApiTags('Equipment Status')
 @ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('equipment-status')
 export class EquipmentStatusController {
   constructor(private readonly service: EquipmentStatusService) { }
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SUPER', 'ADMIN')
   @ApiOperation({ summary: 'Crear un nou estat per al material' })
   @ApiResponse({ status: 201, description: 'Estat creat correctament.' })
@@ -26,8 +25,7 @@ export class EquipmentStatusController {
   }
 
   @Get()
-  @UseGuards(OptionalJwtGuard, RolesGuard)
-  @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER', 'GUEST')
+  @Roles('SUPER', 'ADMIN')
   @ApiOperation({ summary: 'Llistar tots els estats de material' })
   @ApiResponse({ status: 200, description: 'Llista d\'estats retornada.' })
   findAll() {
@@ -35,8 +33,7 @@ export class EquipmentStatusController {
   }
 
   @Get(':id')
-  @UseGuards(OptionalJwtGuard, RolesGuard)
-  @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER', 'GUEST')
+  @Roles('SUPER', 'ADMIN')
   @ApiOperation({ summary: 'Obtenir un estat per ID' })
   @ApiResponse({ status: 200, description: 'Estat retornat correctament.' })
   @ApiResponse({ status: 404, description: 'Estat no trobat.' })
@@ -45,7 +42,6 @@ export class EquipmentStatusController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SUPER', 'ADMIN')
   @ApiOperation({ summary: 'Actualitzar un estat' })
   @ApiResponse({ status: 200, description: 'Estat actualitzat correctament.' })
@@ -57,7 +53,6 @@ export class EquipmentStatusController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SUPER')
   @ApiOperation({ summary: 'Eliminar un estat' })
   @ApiResponse({ status: 200, description: 'Estat eliminat correctament.' })

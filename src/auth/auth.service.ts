@@ -28,6 +28,12 @@ export class AuthService {
       throw new UnauthorizedException('Credencials incorrectes');
     }
 
+    if (!user.status) {
+      throw new UnauthorizedException(
+        'El teu perfil està inactiu temporalment. Contacta amb un administrador.'
+      );
+    }
+
     const payload = {
       sub: user.id_user,
       email: user.email,
@@ -96,7 +102,7 @@ export class AuthService {
 
     return {
       ...rest,
-      status: status ? 'ENABLED' : 'DISABLED',
+      status: status ? 'ACTIU' : 'INACTIU',
       ...(guide && { guide }),
     };
   }

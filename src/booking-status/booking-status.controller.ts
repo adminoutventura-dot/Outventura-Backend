@@ -26,7 +26,7 @@ export class BookingStatusController {
   }
 
   @Get()
-  @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER')
+  @Roles('SUPER', 'ADMIN', 'GUIDE')
   @ApiOperation({ summary: 'Llistar tots els estats de reserva' })
   @ApiResponse({ status: 200, description: 'Llista d\'estats retornada.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
@@ -35,7 +35,7 @@ export class BookingStatusController {
   }
 
   @Get(':id')
-  @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER')
+  @Roles('SUPER', 'ADMIN', 'GUIDE')
   @ApiOperation({ summary: 'Obtenir un estat de reserva per ID' })
   @ApiResponse({ status: 200, description: 'Estat retornat correctament.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
