@@ -19,7 +19,7 @@ export class BookingController {
   @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER')
   @ApiOperation({ summary: 'Crea una nova reserva (sempre en estat PENDING)' })
   @ApiResponse({ status: 201, description: 'Reserva creada correctament.' })
-  @ApiResponse({ status: 400, description: 'L\'usuari està inactiu.' })
+  @ApiResponse({ status: 400, description: 'L\'usuari està inactiu o dates incorrectes.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   @ApiResponse({ status: 404, description: 'Usuari no trobat.' })
   create(@Body() dto: CreateBookingDto) {
@@ -32,18 +32,25 @@ export class BookingController {
   @ApiQuery({ name: 'userId', required: false, type: Number, description: 'Filtrar per usuari' })
   @ApiQuery({ name: 'guideId', required: false, type: Number, description: 'Filtrar per guia' })
   @ApiQuery({ name: 'date', required: false, type: String, description: 'Filtrar per data (YYYY-MM-DD)' })
+  @ApiQuery({ name: 'status', required: false, type: String, description: 'Filtrar per estat (PENDING, ACCEPTED...)' })
   @ApiResponse({ status: 200, description: 'Llista de reserves retornada.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   findAll(
     @Query('userId') userId?: string,
     @Query('guideId') guideId?: string,
     @Query('date') date?: string,
+    @Query('status') status?: string,
+    @CurrentUser() currentUser?: any
   ) {
-    return this.bookingService.findAll({
-      userId: userId ? +userId : undefined,
-      guideId: guideId ? +guideId : undefined,
-      date,
-    });
+    return this.bookingService.findAll(
+      {
+        userId: userId ? +userId : undefined,
+        guideId: guideId ? +guideId : undefined,
+        date,
+        status,
+      },
+      currentUser
+    );
   }
 
   @Get(':id')
@@ -60,7 +67,7 @@ export class BookingController {
   @Roles('SUPER', 'ADMIN', 'GUIDE')
   @ApiOperation({ summary: 'Canviar l\'estat d\'una reserva' })
   @ApiResponse({ status: 200, description: 'Reserva actualitzada correctament.' })
-  @ApiResponse({ status: 400, description: 'Transició d\'estat no permesa.' })
+  @ApiResponse({ status: 400, description: 'Transició d\'estat no permesa o restricció de temps.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
   @ApiResponse({ status: 404, description: 'Reserva o estat no trobat.' })
