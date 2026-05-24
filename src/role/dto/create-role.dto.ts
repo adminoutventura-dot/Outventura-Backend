@@ -1,10 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, Matches } from 'class-validator';
 
 export class CreateRoleDto {
     @ApiProperty({
         example: 'TEST',
         description: 'Codi únic per al rol (ex: SUPER, ADMIN, USER, GUEST)'
+    })
+    @Matches(/^[A-Z_]+$/, {
+        message: 'El codi ha de ser en majúscules, sense espais, números ni caràcters especials'
     })
     @IsString()
     @IsNotEmpty()

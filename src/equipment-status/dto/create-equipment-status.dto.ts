@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, MaxLength, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateEquipmentStatusDto {
@@ -6,6 +6,9 @@ export class CreateEquipmentStatusDto {
         description: 'Codi únic per a identificar l\'estat del material',
         example: 'AVAILABLE',
         maxLength: 20,
+    })
+    @Matches(/^[A-Z_]+$/, {
+        message: 'El codi ha de ser en majúscules, sense espais, números ni caràcters especials'
     })
     @IsString()
     @IsNotEmpty()

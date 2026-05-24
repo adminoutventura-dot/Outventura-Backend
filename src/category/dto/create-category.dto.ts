@@ -1,11 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, MaxLength, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength, IsOptional, Matches } from 'class-validator';
 
 export class CreateCategoryDto {
     @ApiProperty({
         description: 'Codi únic de la categoria',
         example: 'MOUNTAIN',
         maxLength: 50,
+    })
+    @Matches(/^[A-Z_]+$/, {
+        message: 'El codi ha de ser en majúscules, sense espais, números ni caràcters especials'
     })
     @IsString()
     @IsNotEmpty()

@@ -1,8 +1,11 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateBookingStatusDto {
     @ApiProperty({ description: 'Codi de l\'estat', example: 'PENDING' })
+    @Matches(/^[A-Z_]+$/, {
+        message: 'El codi ha de ser en majúscules, sense espais, números ni caràcters especials'
+    })
     @IsString()
     @IsNotEmpty()
     code!: string;
