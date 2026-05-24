@@ -1,4 +1,3 @@
-// create-booking-line.dto.ts
 import { IsInt, IsNumber, IsOptional, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
