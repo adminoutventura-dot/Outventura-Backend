@@ -21,6 +21,7 @@ export class BookingController {
   @ApiResponse({ status: 201, description: 'Reserva creada correctament.' })
   @ApiResponse({ status: 400, description: 'L\'usuari està inactiu o dates incorrectes.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
+  @ApiResponse({ status: 403, description: 'Sense permisos per crear reserva per a un altre usuari.' })
   @ApiResponse({ status: 404, description: 'Usuari no trobat.' })
   create(@Body() dto: CreateBookingDto) {
     return this.bookingService.create(dto);
@@ -77,6 +78,7 @@ export class BookingController {
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
   @ApiResponse({ status: 404, description: 'Reserva o estat no trobat.' })
+  @ApiResponse({ status: 409, description: 'No hi ha unitats de material disponibles.' })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateBookingDto,

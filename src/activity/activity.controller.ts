@@ -23,6 +23,7 @@ export class ActivityController {
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
   @ApiResponse({ status: 404, description: 'Guia no trobat.' })
+  @ApiResponse({ status: 409, description: 'Conflicte de dates del guia.' })
   create(@Body() dto: CreateActivityDto, @CurrentUser() currentUser: any) {
     return this.activitiesService.create(dto, currentUser);
   }
@@ -105,6 +106,7 @@ export class ActivityController {
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
   @ApiResponse({ status: 404, description: 'Activitat no trobada.' })
+  @ApiResponse({ status: 409, description: 'Conflicte de dates del guia.' })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: Partial<CreateActivityDto>,
