@@ -55,16 +55,22 @@ export class EquipmentController {
   @ApiOperation({ summary: 'Llistar tot el material amb filtres opcionals' })
   @ApiQuery({ name: 'categoryId', required: false, type: Number, description: 'Filtrar per categoria' })
   @ApiQuery({ name: 'statusId', required: false, type: Number, description: 'Filtrar per estat' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Pàgina (per defecte 1)' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Resultats per pàgina (per defecte 10)' })
   @ApiResponse({ status: 200, description: 'Llista de material retornada.' })
   findAll(
     @Query('categoryId') categoryId?: string,
     @Query('statusId') statusId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @CurrentUser() currentUser?: any
   ) {
     return this.equipmentService.findAll(
       {
         categoryId: categoryId ? +categoryId : undefined,
         statusId: statusId ? +statusId : undefined,
+        page: page ? +page : undefined,
+        limit: limit ? +limit : undefined,
       },
       currentUser?.role?.code
     );

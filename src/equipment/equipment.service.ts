@@ -31,21 +31,39 @@ export class EquipmentService {
     });
   }
 
-  async findAll(filters?: { categoryId?: number; statusId?: number }, userRole?: string) {
+  async findAll(
+    filters?: { categoryId?: number; statusId?: number; page?: number; limit?: number },
+    userRole?: string
+  ) {
     const isAdminOrSuper = userRole === 'ADMIN' || userRole === 'SUPER';
+    const page = filters?.page ?? 1;
+    const limit = filters?.limit ?? 10;
+    const skip = (page - 1) * limit;
 
-    return this.prisma.equipment.findMany({
-      where: {
-        ...(!isAdminOrSuper && {
-          status: { code: { not: 'DISCONTINUED' } }
-        }),
-        ...(filters?.statusId && { statusId: filters.statusId }),
-        ...(filters?.categoryId && {
-          categories: { some: { id_category: filters.categoryId } }
-        }),
-      },
-      include: { status: true, categories: true }
-    });
+    const where = {
+      ...(!isAdminOrSuper && {
+        status: { code: { not: 'DISCONTINUED' } }
+      }),
+      ...(filters?.statusId && { statusId: filters.statusId }),
+      ...(filters?.categoryId && {
+        categories: { some: { id_category: filters.categoryId } }
+      }),
+    };
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.equipment.findMany({
+        where,
+        skip,
+        take: limit,
+        include: { status: true, categories: true }
+      }),
+      this.prisma.equipment.count({ where })
+    ]);
+
+    return {
+      data,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) }
+    };
   }
 
   async findOne(id: number) {
