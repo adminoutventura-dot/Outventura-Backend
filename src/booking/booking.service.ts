@@ -14,11 +14,9 @@ export class BookingService {
       throw new NotFoundException('Usuari no trobat');
     }
 
-    if (!user.status) {
-      throw new BadRequestException(
-        'El teu perfil està inactiu temporalment. Contacta amb un administrador.'
-      );
-    }
+    if (!user.status) throw new BadRequestException(
+      'El teu perfil està inactiu temporalment. Contacta amb un administrador.'
+    );
 
     const pendingStatus = await this.prisma.bookingStatus.findUnique({
       where: { code: 'PENDING' }
@@ -90,12 +88,7 @@ export class BookingService {
 
     return {
       data,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit)
-      }
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) }
     };
   }
 
@@ -159,7 +152,8 @@ export class BookingService {
           `No es pot canviar l\'estat d\'una reserva ${currentStatus}. Contacta amb un superadministrador.`
         );
       }
-    } else {
+    }
+    else {
       const allowed = validTransitions[currentStatus] || [];
 
       if (!allowed.includes(newStatusCode)) {
@@ -173,8 +167,20 @@ export class BookingService {
       await this.validateMaterialAvailability(booking);
     }
 
-    if (newStatusCode === 'CANCELLED' && !['SUPER', 'ADMIN'].includes(currentRole)) {
-      await this.validateCancellationTime(booking);
+    if (newStatusCode === 'CANCELLED') {
+      // SUPER pot cancelar sempre
+      if (currentRole !== 'SUPER') {
+        // ADMIN pot cancelar totes amb restricció de temps
+        // GUIDE/USER només poden cancelar les seves amb restricció de temps i que siguen seues
+        if (['GUIDE', 'USER'].includes(currentRole)) {
+          if ((booking as any).userId !== currentUser.id_user) {
+            throw new ForbiddenException(
+              'No tens permisos per cancelar aquesta reserva.'
+            );
+          }
+        }
+        await this.validateCancellationTime(booking);
+      }
     }
 
     return this.prisma.booking.update({
@@ -212,7 +218,7 @@ export class BookingService {
         _sum: { quantity: true }
       });
 
-      const reserved = reservedUnits._sum.quantity ?? 0;
+      const reserved = reservedUnits._sum?.quantity ?? 0;
       const available = equipment.units - reserved;
 
       if (line.quantity > available) {
@@ -242,9 +248,9 @@ export class BookingService {
           );
         }
       }
-    } else {
+    }
+    else {
       const hoursUntilStart = (new Date(booking.init_date).getTime() - now.getTime()) / (1000 * 60 * 60);
-
       if (hoursUntilStart < 24) {
         throw new BadRequestException(
           'No pots cancelar aquesta reserva. Falten menys de 24h per a l\'inici. Contacta amb un administrador.'
@@ -253,9 +259,16 @@ export class BookingService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: number, currentUser: any) {
     const booking = await this.findOne(id);
     const currentStatus = (booking.status as any).code;
+    const currentRole = currentUser.role.code;
+
+    if (['GUIDE', 'USER'].includes(currentRole)) {
+      throw new ForbiddenException(
+        'No tens permisos per eliminar reserves. Pots cancelar-la si compleix les restriccions de temps.'
+      );
+    }
 
     if (currentStatus === 'IN_PROGRESS') {
       throw new BadRequestException('No es pot eliminar una reserva en curs');

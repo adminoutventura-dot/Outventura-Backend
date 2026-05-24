@@ -86,14 +86,17 @@ export class BookingController {
   }
 
   @Delete(':id')
-  @Roles('SUPER', 'ADMIN')
+  @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER')
   @ApiOperation({ summary: 'Eliminar una reserva' })
   @ApiResponse({ status: 200, description: 'Reserva eliminada correctament.' })
   @ApiResponse({ status: 400, description: 'No es pot eliminar una reserva en curs.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
-  @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
+  @ApiResponse({ status: 403, description: 'GUIDE i USER no poden eliminar reserves.' })
   @ApiResponse({ status: 404, description: 'Reserva no trobada.' })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.bookingService.remove(id);
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() currentUser: any
+  ) {
+    return this.bookingService.remove(id, currentUser);
   }
 }
