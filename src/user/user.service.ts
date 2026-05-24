@@ -260,9 +260,39 @@ export class UserService {
       if (targetRole === 'SUPER') {
         throw new ForbiddenException('No pots desactivar un SUPER');
       }
+
       if (targetRole === 'ADMIN') {
         throw new ForbiddenException('Només un SUPER pot desactivar un ADMIN');
       }
+    }
+
+    // Comprova reserves IN_PROGRESS
+    const inProgressBookings = await this.prisma.booking.count({
+      where: {
+        userId: id,
+        status: { code: 'IN_PROGRESS' }
+      }
+    });
+
+    if (inProgressBookings > 0) {
+      throw new BadRequestException(
+        `No es pot desactivar l\'usuari perquè té ${inProgressBookings} reserva(es) en curs`
+      );
+    }
+
+    // Cancel·la reserves PENDING i ACCEPTED automàticament
+    const cancelledStatus = await this.prisma.bookingStatus.findUnique({
+      where: { code: 'CANCELLED' }
+    });
+
+    if (cancelledStatus) {
+      await this.prisma.booking.updateMany({
+        where: {
+          userId: id,
+          status: { code: { in: ['PENDING', 'ACCEPTED'] } }
+        },
+        data: { statusId: cancelledStatus.id_book_status }
+      });
     }
 
     const updatedUser = await this.prisma.user.update({
@@ -272,6 +302,7 @@ export class UserService {
     });
 
     const { password, ...userWithoutPassword } = updatedUser;
+
     return { ...userWithoutPassword, status: 'INACTIU' };
   }
 }
