@@ -23,8 +23,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             include: { role: true },
         });
 
-        if (!user || !user.status) {
-            throw new UnauthorizedException('Usuari no vàlid o inactiu');
+        if (!user) {
+            throw new UnauthorizedException('Usuari no vàlid');
+        }
+
+        if (!user.status) {
+            throw new UnauthorizedException(
+                'El teu perfil està inactiu temporalment. Contacta amb un administrador.'
+            );
         }
 
         return user;
