@@ -45,38 +45,58 @@ export class BookingService {
   }
 
   async findAll(
-    filters?: { userId?: number; guideId?: number; date?: string; status?: string },
+    filters?: { userId?: number; guideId?: number; date?: string; status?: string; page?: number; limit?: number },
     currentUser?: any
   ) {
     const currentRole = currentUser?.role?.code;
+    const page = filters?.page ?? 1;
+    const limit = filters?.limit ?? 10;
+    const skip = (page - 1) * limit;
 
-    return this.prisma.booking.findMany({
-      where: {
-        ...(currentRole === 'USER' && { userId: currentUser.id_user }),
-        ...(currentRole === 'GUIDE' && {
-          OR: [
-            { userId: currentUser.id_user },
-            { lines: { some: { activity: { guide: { userId: currentUser.id_user } } } } }
-          ]
-        }),
-        ...(filters?.userId && { userId: filters.userId }),
-        ...(filters?.status && { status: { code: filters.status } }),
-        ...(filters?.date && {
-          init_date: {
-            gte: new Date(filters.date + 'T00:00:00Z'),
-            lte: new Date(filters.date + 'T23:59:59Z'),
-          }
-        }),
-        ...(filters?.guideId && {
-          lines: { some: { activity: { guideId: filters.guideId } } }
-        }),
-      },
-      include: {
-        user: { select: { name: true, email: true } },
-        status: true,
-        lines: { include: { equipment: true, activity: true } }
+    const where = {
+      ...(currentRole === 'USER' && { userId: currentUser.id_user }),
+      ...(currentRole === 'GUIDE' && {
+        OR: [
+          { userId: currentUser.id_user },
+          { lines: { some: { activity: { guide: { userId: currentUser.id_user } } } } }
+        ]
+      }),
+      ...(filters?.userId && { userId: filters.userId }),
+      ...(filters?.status && { status: { code: filters.status } }),
+      ...(filters?.date && {
+        init_date: {
+          gte: new Date(filters.date + 'T00:00:00Z'),
+          lte: new Date(filters.date + 'T23:59:59Z'),
+        }
+      }),
+      ...(filters?.guideId && {
+        lines: { some: { activity: { guideId: filters.guideId } } }
+      }),
+    };
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.booking.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          user: { select: { name: true, email: true } },
+          status: true,
+          lines: { include: { equipment: true, activity: true } }
+        }
+      }),
+      this.prisma.booking.count({ where })
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
       }
-    });
+    };
   }
 
   async findOne(id: number) {

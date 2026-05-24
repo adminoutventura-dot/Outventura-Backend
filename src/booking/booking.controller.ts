@@ -33,6 +33,8 @@ export class BookingController {
   @ApiQuery({ name: 'guideId', required: false, type: Number, description: 'Filtrar per guia' })
   @ApiQuery({ name: 'date', required: false, type: String, description: 'Filtrar per data (YYYY-MM-DD)' })
   @ApiQuery({ name: 'status', required: false, type: String, description: 'Filtrar per estat (PENDING, ACCEPTED...)' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Pàgina (per defecte 1)' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Resultats per pàgina (per defecte 10)' })
   @ApiResponse({ status: 200, description: 'Llista de reserves retornada.' })
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   findAll(
@@ -40,6 +42,8 @@ export class BookingController {
     @Query('guideId') guideId?: string,
     @Query('date') date?: string,
     @Query('status') status?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @CurrentUser() currentUser?: any
   ) {
     return this.bookingService.findAll(
@@ -48,6 +52,8 @@ export class BookingController {
         guideId: guideId ? +guideId : undefined,
         date,
         status,
+        page: page ? +page : undefined,
+        limit: limit ? +limit : undefined,
       },
       currentUser
     );
