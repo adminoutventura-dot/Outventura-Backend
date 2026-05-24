@@ -15,7 +15,7 @@ async function seedRoles(): Promise<void> {
         { code: 'SUPER', description: 'Super administrador del sistema' },
         { code: 'ADMIN', description: 'Administrador del sistema' },
         { code: 'GUIDE', description: 'Guia de les activitats' },
-        { code: 'USER', description: 'Usuari estàndard logged in' },
+        { code: 'USER', description: 'Usuari estàndard registrat' },
         { code: 'GUEST', description: 'Usuari convidat' },
     ];
     for (const role of roles) {
@@ -33,7 +33,7 @@ async function seedUsers(): Promise<void> {
     const userRole = await prisma.role.findUnique({ where: { code: 'USER' } });
 
     if (!superRole || !adminRole || !guideRole || !userRole) {
-        throw new Error('Roles missing. Run seedRoles first.');
+        throw new Error('Falten rols. Executa seedRoles primer.');
     }
 
     const hashedSuper = await bcrypt.hash('superadmin', 10);
@@ -91,7 +91,7 @@ async function seedGuides(): Promise<void> {
     const carlosUser = await prisma.user.findUnique({ where: { email: 'carlos@guide.com' } });
     const sandraUser = await prisma.user.findUnique({ where: { email: 'sandra@guide.com' } });
 
-    if (!carlosUser || !sandraUser) throw new Error('Guide users not found. Run seedUsers first.');
+    if (!carlosUser || !sandraUser) throw new Error('Usuaris guia no trobats. Executa seedUsers primer.');
 
     await prisma.guide.upsert({
         where: { userId: carlosUser.id_user },
@@ -129,7 +129,7 @@ async function seedActivities(): Promise<void> {
     const carlosGuide = await prisma.guide.findFirst({ where: { user: { email: 'carlos@guide.com' } } });
     const sandraGuide = await prisma.guide.findFirst({ where: { user: { email: 'sandra@guide.com' } } });
 
-    if (!carlosGuide || !sandraGuide) throw new Error('Guides not found. Run seedGuides first.');
+    if (!carlosGuide || !sandraGuide) throw new Error('Guies no trobats. Executa seedGuides primer.');
 
     const hikingCat = await prisma.category.findUnique({ where: { code: 'HIKING' } });
     const mountainCat = await prisma.category.findUnique({ where: { code: 'MOUNTAIN' } });
@@ -274,7 +274,7 @@ async function seedEquipment(): Promise<void> {
     const availableStatus = await prisma.equipmentStatus.findUnique({ where: { code: 'AVAILABLE' } });
     const unavailableStatus = await prisma.equipmentStatus.findUnique({ where: { code: 'UNAVAILABLE' } });
 
-    if (!availableStatus || !unavailableStatus) throw new Error('Equipment statuses not found. Run seedEquipmentStatuses first.');
+    if (!availableStatus || !unavailableStatus) throw new Error('Estats de material no trobats. Executa seedEquipmentStatuses primer.');
 
     const hikingCat = await prisma.category.findUnique({ where: { code: 'HIKING' } });
     const mountainCat = await prisma.category.findUnique({ where: { code: 'MOUNTAIN' } });
@@ -322,7 +322,7 @@ async function seedBookings(): Promise<void> {
     const sandraUser = await prisma.user.findUnique({ where: { email: 'sandra@guide.com' } });
 
     if (!lolaUser || !marcUser || !carlosUser || !sandraUser) {
-        throw new Error('Users not found. Run seedUsers first.');
+        throw new Error('Usuaris no trobats. Executa seedUsers primer.');
     }
 
     const pendingStatus = await prisma.bookingStatus.findUnique({ where: { code: 'PENDING' } });
@@ -332,24 +332,24 @@ async function seedBookings(): Promise<void> {
     const cancelledStatus = await prisma.bookingStatus.findUnique({ where: { code: 'CANCELLED' } });
 
     if (!pendingStatus || !acceptedStatus || !inProgressStatus || !finishedStatus || !cancelledStatus) {
-        throw new Error('Booking statuses not found. Run seedBookingStatuses first.');
+        throw new Error('Estats de reserva no trobats. Executa seedBookingStatuses primer.');
     }
 
-    const trekPoles = await prisma.equipment.findFirst({ where: { title: 'Trekking poles' } });
-    const backpack = await prisma.equipment.findFirst({ where: { title: 'Hiking backpack 45L' } });
-    const kayak = await prisma.equipment.findFirst({ where: { title: 'Kayak individual' } });
-    const tent = await prisma.equipment.findFirst({ where: { title: 'Camping tent 2 people' } });
-    const snowshoes = await prisma.equipment.findFirst({ where: { title: 'Snowshoes' } });
+    const bastons = await prisma.equipment.findFirst({ where: { title: 'Bastons de trekking' } });
+    const motxilla = await prisma.equipment.findFirst({ where: { title: 'Motxilla de senderisme 45L' } });
+    const caiac = await prisma.equipment.findFirst({ where: { title: 'Caiac individual' } });
+    const tenda = await prisma.equipment.findFirst({ where: { title: 'Tenda de campanya 2 persones' } });
+    const raquetes = await prisma.equipment.findFirst({ where: { title: 'Raquetes de neu' } });
 
     const rutaFonts = await prisma.activity.findFirst({ where: { title: 'Ruta de les Fonts' } });
-    const caiac = await prisma.activity.findFirst({ where: { title: 'Caiac al Pantà' } });
+    const caiacActivitat = await prisma.activity.findFirst({ where: { title: 'Caiac al Pantà' } });
     const ascensio = await prisma.activity.findFirst({ where: { title: 'Ascensió al Pic Major' } });
-    const raquetes = await prisma.activity.findFirst({ where: { title: 'Raquetes de Neu al Port' } });
+    const raquetesActivitat = await prisma.activity.findFirst({ where: { title: 'Raquetes de Neu al Port' } });
     const acampada = await prisma.activity.findFirst({ where: { title: 'Acampada Familiar al Bosc' } });
 
-    if (!trekPoles || !backpack || !kayak || !tent || !snowshoes ||
-        !rutaFonts || !caiac || !ascensio || !raquetes || !acampada) {
-        throw new Error('Equipment or activities not found. Run seedEquipment and seedActivities first.');
+    if (!bastons || !motxilla || !caiac || !tenda || !raquetes ||
+        !rutaFonts || !caiacActivitat || !ascensio || !raquetesActivitat || !acampada) {
+        throw new Error('Material o activitats no trobats. Executa seedEquipment i seedActivities primer.');
     }
 
     // Reserva 1 — Lola, PENDING, activitat Ruta de les Fonts (2 places) + bastons
@@ -357,7 +357,7 @@ async function seedBookings(): Promise<void> {
         data: {
             userId: lolaUser.id_user,
             statusId: pendingStatus.id_book_status,
-            total_price: 0,
+            total_price: 5.00,
             init_date: rutaFonts.init_date,
             end_date: rutaFonts.end_date,
         }
@@ -366,40 +366,38 @@ async function seedBookings(): Promise<void> {
         data: { bookingId: booking1.id_booking, activityId: rutaFonts.id_activity, quantity: 2, price_at_moment: 0 }
     });
     await prisma.bookingLine.create({
-        data: { bookingId: booking1.id_booking, equipmentId: trekPoles.id_equipment, quantity: 2, price_at_moment: 5.00 }
+        data: { bookingId: booking1.id_booking, equipmentId: bastons.id_equipment, quantity: 2, price_at_moment: 5.00 }
     });
-    await prisma.booking.update({ where: { id_booking: booking1.id_booking }, data: { total_price: 5.00 } });
 
-    // Reserva 2 — Lola, ACCEPTED, activitat Caiac al Pantà (1 plaça)
+    // Reserva 2 — Lola, ACCEPTED, activitat Caiac al Pantà (1 plaça) + caiac
     const booking2 = await prisma.booking.create({
         data: {
             userId: lolaUser.id_user,
             statusId: acceptedStatus.id_book_status,
-            total_price: 0,
-            init_date: caiac.init_date,
-            end_date: caiac.end_date,
+            total_price: 20.00,
+            init_date: caiacActivitat.init_date,
+            end_date: caiacActivitat.end_date,
         }
     });
     await prisma.bookingLine.create({
-        data: { bookingId: booking2.id_booking, activityId: caiac.id_activity, quantity: 1, price_at_moment: 0 }
+        data: { bookingId: booking2.id_booking, activityId: caiacActivitat.id_activity, quantity: 1, price_at_moment: 0 }
     });
     await prisma.bookingLine.create({
-        data: { bookingId: booking2.id_booking, equipmentId: kayak.id_equipment, quantity: 1, price_at_moment: 20.00 }
+        data: { bookingId: booking2.id_booking, equipmentId: caiac.id_equipment, quantity: 1, price_at_moment: 20.00 }
     });
-    await prisma.booking.update({ where: { id_booking: booking2.id_booking }, data: { total_price: 20.00 } });
 
-    // Reserva 3 — Lola, CANCELLED, sols material (mochila)
+    // Reserva 3 — Lola, CANCELLED, sols material (motxilla)
     const booking3 = await prisma.booking.create({
         data: {
             userId: lolaUser.id_user,
             statusId: cancelledStatus.id_book_status,
-            total_price: 8.00,
+            total_price: 16.00,
             init_date: new Date('2026-07-10T08:00:00Z'),
             end_date: new Date('2026-07-12T18:00:00Z'),
         }
     });
     await prisma.bookingLine.create({
-        data: { bookingId: booking3.id_booking, equipmentId: backpack.id_equipment, quantity: 1, price_at_moment: 8.00 }
+        data: { bookingId: booking3.id_booking, equipmentId: motxilla.id_equipment, quantity: 1, price_at_moment: 16.00 }
     });
 
     // Reserva 4 — Marc, PENDING, activitat Ascensió al Pic Major (3 places)
@@ -416,7 +414,7 @@ async function seedBookings(): Promise<void> {
         data: { bookingId: booking4.id_booking, activityId: ascensio.id_activity, quantity: 3, price_at_moment: 0 }
     });
 
-    // Reserva 5 — Marc, FINISHED, activitat Acampada + tenda
+    // Reserva 5 — Marc, FINISHED, activitat Acampada Familiar + tenda
     const booking5 = await prisma.booking.create({
         data: {
             userId: marcUser.id_user,
@@ -430,27 +428,27 @@ async function seedBookings(): Promise<void> {
         data: { bookingId: booking5.id_booking, activityId: acampada.id_activity, quantity: 2, price_at_moment: 0 }
     });
     await prisma.bookingLine.create({
-        data: { bookingId: booking5.id_booking, equipmentId: tent.id_equipment, quantity: 1, price_at_moment: 15.00 }
+        data: { bookingId: booking5.id_booking, equipmentId: tenda.id_equipment, quantity: 1, price_at_moment: 15.00 }
     });
 
-    // Reserva 6 — Carlos (guia actuant com a usuari), ACCEPTED, raquetes de neu
+    // Reserva 6 — Carlos (guia actuant com a usuari), ACCEPTED, Raquetes de Neu al Port + raquetes
     const booking6 = await prisma.booking.create({
         data: {
             userId: carlosUser.id_user,
             statusId: acceptedStatus.id_book_status,
             total_price: 12.00,
-            init_date: raquetes.init_date,
-            end_date: raquetes.end_date,
+            init_date: raquetesActivitat.init_date,
+            end_date: raquetesActivitat.end_date,
         }
     });
     await prisma.bookingLine.create({
-        data: { bookingId: booking6.id_booking, activityId: raquetes.id_activity, quantity: 1, price_at_moment: 0 }
+        data: { bookingId: booking6.id_booking, activityId: raquetesActivitat.id_activity, quantity: 1, price_at_moment: 0 }
     });
     await prisma.bookingLine.create({
-        data: { bookingId: booking6.id_booking, equipmentId: snowshoes.id_equipment, quantity: 1, price_at_moment: 12.00 }
+        data: { bookingId: booking6.id_booking, equipmentId: raquetes.id_equipment, quantity: 1, price_at_moment: 12.00 }
     });
 
-    // Reserva 7 — Sandra (guia actuant com a usuari), IN_PROGRESS, sols material
+    // Reserva 7 — Sandra (guia actuant com a usuari), IN_PROGRESS, sols material (motxilles)
     const booking7 = await prisma.booking.create({
         data: {
             userId: sandraUser.id_user,
@@ -461,7 +459,7 @@ async function seedBookings(): Promise<void> {
         }
     });
     await prisma.bookingLine.create({
-        data: { bookingId: booking7.id_booking, equipmentId: backpack.id_equipment, quantity: 2, price_at_moment: 16.00 }
+        data: { bookingId: booking7.id_booking, equipmentId: motxilla.id_equipment, quantity: 2, price_at_moment: 16.00 }
     });
 
     console.log('... end seeding Booking.\n');
