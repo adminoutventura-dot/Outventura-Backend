@@ -17,7 +17,38 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Outventura API')
-    .setDescription('API REST per a la gestió d\'activitats d\'aventura i alquiler de material, desenvolupada amb NestJS i Prisma sobre PostgreSQL. Aquesta API permet gestionar usuaris, guies, categories, activitats, material i reserves, amb un sistema de rols i permisos per garantir la seguretat i l\'accés adequat a les diferents funcionalitats del sistema.')
+
+    .setDescription(`
+#### API REST per a la gestió d'activitats d'aventura i alquiler de material, desenvolupada amb NestJS i Prisma sobre PostgreSQL.
+
+---
+
+#### 📋 Funcionalitats principals
+
+- 👤 **Usuaris i rols**: gestió d'usuaris amb rols SUPER, ADMIN, GUIDE i USER
+- 🧭 **Guies**: perfils de guia associats a usuaris
+- 🏷️ **Categories**: classificació d'activitats i material
+- 🏕️ **Activitats**: excursions i aventures guiades
+- 🥾 **Material**: equipament disponible per a lloguer
+- 📅 **Reserves**: sistema complet de reserves amb màquina d'estats
+
+---
+
+#### 🔐 Accés a l'API
+
+Alguns endpoints són **públics** i no requereixen autenticació (catàleg d'activitats, material, guies i categories).
+
+Els endpoints protegits requereixen un **Bearer Token JWT**.
+Obtén el token a \`POST /auth/login\` i afegeix-lo amb el botó **Authorize** 🔒
+
+| Rol | Accés |
+|-----|-------|
+| GUEST | Consulta del catàleg públic |
+| USER | Reserves i perfil propi |
+| GUIDE | Gestió de les seves activitats |
+| ADMIN | Gestió general del sistema |
+| SUPER | Accés i control total |
+`)
     .setVersion('1.0')
     .addTag('Auth', 'Accés i seguretat')
     .addTag('Roles (for User Management)', 'Rols i permisos')
