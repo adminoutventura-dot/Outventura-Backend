@@ -1,7 +1,7 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,7 +17,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Outventura API')
-    .setDescription('API per a la gestió d\'activitats i material de l\'app Outventura')
+    .setDescription('API REST per a la gestió d\'activitats d\'aventura i alquiler de material, desenvolupada amb NestJS i Prisma sobre PostgreSQL. Aquesta API permet gestionar usuaris, guies, categories, activitats, material i reserves, amb un sistema de rols i permisos per garantir la seguretat i l\'accés adequat a les diferents funcionalitats del sistema.')
     .setVersion('1.0')
     .addTag('Auth', 'Accés i seguretat')
     .addTag('Roles (for User Management)', 'Rols i permisos')

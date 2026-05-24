@@ -1,5 +1,5 @@
-import { IsInt, IsNumber, IsOptional, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsInt, IsOptional, Min } from 'class-validator';
 
 export class CreateBookingLineDto {
     @ApiProperty({ description: 'ID de la reserva', example: 1 })

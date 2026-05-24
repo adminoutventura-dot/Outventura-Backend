@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsString, IsOptional, MaxLength, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 
 export class CreateEquipmentStatusDto {
     @ApiProperty({

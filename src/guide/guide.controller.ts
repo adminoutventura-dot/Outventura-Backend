@@ -1,12 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
-import { GuideService } from './guide.service';
-import { CreateGuideDto } from './dto/create-guide.dto';
-import { UpdateGuideDto } from './dto/update-guide.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorators';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorators';
+import { CreateGuideDto } from './dto/create-guide.dto';
+import { UpdateGuideDto } from './dto/update-guide.dto';
+import { GuideService } from './guide.service';
 
 @ApiTags('Guides')
 @ApiBearerAuth('JWT-auth')

@@ -1,5 +1,5 @@
-import { IsInt, IsNotEmpty, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsDateString, IsInt, IsNotEmpty } from 'class-validator';
 
 export class CreateBookingDto {
     @ApiProperty({ description: 'ID de l\'usuari que fa la reserva', example: 1 })

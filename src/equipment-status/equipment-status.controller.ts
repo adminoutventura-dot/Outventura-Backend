@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { EquipmentStatusService } from './equipment-status.service';
-import { CreateEquipmentStatusDto } from './dto/create-equipment-status.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorators';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorators';
+import { CreateEquipmentStatusDto } from './dto/create-equipment-status.dto';
+import { EquipmentStatusService } from './equipment-status.service';
 
 @ApiTags('Equipment Status')
 @ApiBearerAuth('JWT-auth')

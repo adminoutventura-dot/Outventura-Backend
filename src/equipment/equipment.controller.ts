@@ -1,13 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Query } from '@nestjs/common';
-import { EquipmentService } from './equipment.service';
-import { CreateEquipmentDto } from './dto/create-equipment.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiProperty } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiProperty, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { IsInt } from 'class-validator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorators';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorators';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { IsInt } from 'class-validator';
+import { CreateEquipmentDto } from './dto/create-equipment.dto';
+import { EquipmentService } from './equipment.service';
 
 class ChangeStatusDto {
   @ApiProperty({ example: 2, description: 'ID del nou estat' })

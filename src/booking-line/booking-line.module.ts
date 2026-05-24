@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { BookingLineService } from './booking-line.service';
-import { BookingLineController } from './booking-line.controller';
 import { PrismaModule } from '../prisma/prisma.module';
+import { BookingLineController } from './booking-line.controller';
+import { BookingLineService } from './booking-line.service';
 
 @Module({
   imports: [PrismaModule],

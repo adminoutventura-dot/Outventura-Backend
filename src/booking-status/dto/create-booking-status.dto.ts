@@ -1,5 +1,5 @@
-import { IsString, IsNotEmpty, IsOptional, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 
 export class CreateBookingStatusDto {
     @ApiProperty({ description: 'Codi de l\'estat', example: 'PENDING' })

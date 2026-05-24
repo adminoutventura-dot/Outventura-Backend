@@ -1,5 +1,5 @@
-import { IsInt, IsString, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateGuideDto {
     @ApiProperty({ description: 'ID de l\'usuari associat', example: 1 })
