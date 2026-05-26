@@ -101,7 +101,7 @@ export class UserController {
   }
 
   @Delete(':id')
-  @Roles('SUPER')
+  @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER')
   @ApiOperation({ summary: 'Eliminar un usuari (soft delete)' })
   @ApiParam({ name: 'id', description: 'ID numèric de l\'usuari a esborrar' })
   @ApiResponse({ status: 200, description: 'Usuari eliminat correctament.' })

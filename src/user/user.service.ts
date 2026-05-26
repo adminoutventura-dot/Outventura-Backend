@@ -248,21 +248,35 @@ export class UserService {
       where: { id_user: id },
       include: { role: true }
     });
-
-    if (!targetUser) {
-      throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
-    }
+    if (!targetUser) throw new NotFoundException(`L'usuari amb ID ${id} no existeix`);
 
     const currentRole = currentUser.role.code;
     const targetRole = (targetUser as any).role.code;
+    const isSelf = id === currentUser.id_user;
 
-    if (currentRole !== 'SUPER') {
-      if (targetRole === 'SUPER') {
-        throw new ForbiddenException('No pots desactivar un SUPER');
+    // USER i GUIDE → només poden desactivar-se ells mateixos
+    if (['USER', 'GUIDE'].includes(currentRole)) {
+      if (!isSelf) {
+        throw new ForbiddenException('Només pots desactivar el teu propi compte');
       }
+    }
 
-      if (targetRole === 'ADMIN') {
-        throw new ForbiddenException('Només un SUPER pot desactivar un ADMIN');
+    // ADMIN → pot desactivar-se ell mateix + USER i GUIDE, però no altres ADMIN ni SUPER
+    if (currentRole === 'ADMIN') {
+      if (!isSelf) {
+        if (targetRole === 'SUPER') {
+          throw new ForbiddenException('No pots desactivar un SUPER');
+        }
+        if (targetRole === 'ADMIN') {
+          throw new ForbiddenException('No pots desactivar un altre ADMIN');
+        }
+      }
+    }
+
+    // SUPER → pot desactivar qualsevol excepte altres SUPER
+    if (currentRole === 'SUPER') {
+      if (targetRole === 'SUPER' && !isSelf) {
+        throw new ForbiddenException('No pots desactivar un altre SUPER');
       }
     }
 
@@ -273,7 +287,6 @@ export class UserService {
         status: { code: 'IN_PROGRESS' }
       }
     });
-
     if (inProgressBookings > 0) {
       throw new BadRequestException(
         `No es pot desactivar l\'usuari perquè té ${inProgressBookings} reserva(es) en curs`
@@ -284,7 +297,6 @@ export class UserService {
     const cancelledStatus = await this.prisma.bookingStatus.findUnique({
       where: { code: 'CANCELLED' }
     });
-
     if (cancelledStatus) {
       await this.prisma.booking.updateMany({
         where: {
@@ -302,7 +314,6 @@ export class UserService {
     });
 
     const { password, ...userWithoutPassword } = updatedUser;
-
     return { ...userWithoutPassword, status: 'INACTIU' };
   }
 }
