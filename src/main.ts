@@ -61,6 +61,7 @@ Obtén el token a \`POST /auth/login\` i afegeix-lo amb el botó **Authorize** �
     .addTag('Bookings', 'Reserves del sistema')
     .addTag('Booking Status', 'Estat de les reserves')
     .addTag('Booking Lines', 'Línies de les reserves')
+    .addTag('Activity Log', 'Registre d\'activitat del sistema')
     .addBearerAuth(
       {
         type: 'http',
