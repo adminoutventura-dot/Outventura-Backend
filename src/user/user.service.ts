@@ -30,7 +30,19 @@ export class UserService {
     });
 
     const { password, ...userWithoutPassword } = user;
-    return { ...userWithoutPassword, status: userWithoutPassword.status ? 'ACTIU' : 'INACTIU' };
+    const result = {
+      ...userWithoutPassword,
+      status: userWithoutPassword.status ? 'ACTIU' : 'INACTIU'
+    };
+
+    if ((user as any).role.code === 'GUIDE') {
+      return {
+        ...result,
+        warning: 'L\'usuari ha sigut creat amb rol GUIDE però encara no té perfil de guia. Recorda crear-lo a POST /guide.'
+      };
+    }
+
+    return result;
   }
 
   async findAll() {
