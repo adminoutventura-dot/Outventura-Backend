@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsInt, Min, Max, IsDateString, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsInt, Min, Max, IsDateString, IsOptional, IsArray } from 'class-validator';
 
 export class CreateActivityDto {
     @ApiProperty({ example: 'Ruta de les Fonts', description: 'Títol de l\'activitat' })
@@ -11,6 +11,11 @@ export class CreateActivityDto {
     @IsString()
     @IsOptional()
     description?: string;
+
+    @ApiPropertyOptional({ example: 'assets/images/ruta.jpg', description: 'Imatge o URL de l\'activitat' })
+    @IsString()
+    @IsOptional()
+    image_asset?: string;
 
     @ApiProperty({ example: '2024-06-15T09:00:00Z' })
     @IsDateString()
@@ -39,4 +44,16 @@ export class CreateActivityDto {
     @ApiProperty({ example: 1, description: 'ID del guia assignat' })
     @IsInt()
     guideId!: number;
+
+    @ApiPropertyOptional({ example: [1, 2, 5], description: 'IDs dels materials recomanats' })
+    @IsArray()
+    @IsInt({ each: true })
+    @IsOptional()
+    recommendedEquipmentIds?: number[];
+
+    @ApiPropertyOptional({ example: ['MOUNTAIN', 'CAMPING'], description: 'Codis de les categories a assignar' })
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    categoryCodes?: string[];
 }
