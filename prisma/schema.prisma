@@ -38,9 +38,10 @@ model User {
 model Guide {
   id_guide    Int    @id @default(autoincrement())
   userId      Int    @unique
-  user        User   @relation(fields: [userId], references: [id_user])
-  specialty   String
   credentials String
+
+  user       User       @relation(fields: [userId], references: [id_user])
+  categories Category[]
 
   activities Activity[]
 }
@@ -52,6 +53,7 @@ model Category {
 
   equipments Equipment[]
   activities Activity[]
+  guide      Guide[]
 }
 
 model EquipmentStatus {
@@ -63,17 +65,21 @@ model EquipmentStatus {
 }
 
 model Equipment {
-  id_equipment  Int     @id @default(autoincrement())
-  title         String
-  description   String?
-  price_per_day Decimal @db.Decimal(10, 2)
-  units         Int     @default(1)
+  id_equipment    Int     @id @default(autoincrement())
+  title           String
+  description     String?
+  image_asset     String?
+  price_per_day   Decimal @db.Decimal(10, 2)
+  available_units Int     @default(1)
+  total_units     Int     @default(1)
 
   statusId Int
   status   EquipmentStatus @relation(fields: [statusId], references: [id_status])
 
   categories   Category[]
   bookingLines BookingLine[]
+
+  recomendedForActivities Activity[] @relation("ActivityRecommendedEquipment")
 }
 
 model Activity {
@@ -88,9 +94,11 @@ model Activity {
 
   categories Category[]
 
-  guideId      Int
-  guide        Guide         @relation(fields: [guideId], references: [id_guide])
-  bookingLines BookingLine[]
+  guideId Int
+  guide   Guide @relation(fields: [guideId], references: [id_guide])
+
+  bookingLines         BookingLine[]
+  recomendedEquipments Equipment[]   @relation("ActivityRecommendedEquipment")
 }
 
 model BookingStatus {
