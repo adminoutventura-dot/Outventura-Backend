@@ -42,8 +42,8 @@ async function seedUsers(): Promise<void> {
     const hashedUser = await bcrypt.hash('useruser', 10);
 
     const users = [
-        { name: 'Carolina', surname: 'Crespo', email: 'carolina@superadmin.com', phone: '123456789', password: hashedSuper, roleId: superRole.id_role },
-        { name: 'Miriam', surname: 'Molina', email: 'miriam@superadmin.com', phone: '123456789', password: hashedSuper, roleId: superRole.id_role },
+        { name: 'Carolina', surname: 'Agulló', email: 'carolina@superadmin.com', phone: '123456789', password: hashedSuper, roleId: superRole.id_role },
+        { name: 'Miriam', surname: 'Navalón', email: 'miriam@superadmin.com', phone: '123456789', password: hashedSuper, roleId: superRole.id_role },
         { name: 'Paco', surname: 'Perez', email: 'paco@admin.com', phone: '123456789', password: hashedAdmin, roleId: adminRole.id_role },
         { name: 'Carlos', surname: 'Cruz', email: 'carlos@guide.com', phone: '123456789', password: hashedGuide, roleId: guideRole.id_role },
         { name: 'Sandra', surname: 'Soler', email: 'sandra@guide.com', phone: '123456789', password: hashedGuide, roleId: guideRole.id_role },
@@ -93,16 +93,37 @@ async function seedGuides(): Promise<void> {
 
     if (!carlosUser || !sandraUser) throw new Error('Usuaris guia no trobats. Executa seedUsers primer.');
 
+    // Carlos — expert en HIKING, MOUNTAIN i CAMPING
     await prisma.guide.upsert({
         where: { userId: carlosUser.id_user },
         update: {},
-        create: { userId: carlosUser.id_user, specialty: 'Senderisme i Muntanya', credentials: 'Llicència federativa núm. 1234' }
+        create: {
+            userId: carlosUser.id_user,
+            credentials: 'Llicència federativa núm. 1234',
+            categories: {
+                connect: [
+                    { code: 'HIKING' },
+                    { code: 'MOUNTAIN' },
+                    { code: 'CAMPING' },
+                ]
+            }
+        }
     });
 
+    // Sandra — experta en AQUATIC i SNOW
     await prisma.guide.upsert({
         where: { userId: sandraUser.id_user },
         update: {},
-        create: { userId: sandraUser.id_user, specialty: 'Activitats Aquàtiques i Neu', credentials: 'Llicència federativa núm. 5678' }
+        create: {
+            userId: sandraUser.id_user,
+            credentials: 'Llicència federativa núm. 5678',
+            categories: {
+                connect: [
+                    { code: 'AQUATIC' },
+                    { code: 'SNOW' },
+                ]
+            }
+        }
     });
 
     console.log('... end seeding Guide.\n');
@@ -284,20 +305,20 @@ async function seedEquipment(): Promise<void> {
 
     const equipment = [
         // HIKING
-        { title: 'Bastons de trekking', description: 'Bastons de trekking d\'alumini lleuger, alçada regulable', price_per_day: 5.00, units: 10, statusId: availableStatus.id_status, category: hikingCat },
-        { title: 'Motxilla de senderisme 45L', description: 'Motxilla impermeable amb sistema dorsal ergonòmic', price_per_day: 8.00, units: 5, statusId: availableStatus.id_status, category: hikingCat },
+        { title: 'Bastons de trekking', description: 'Bastons de trekking d\'alumini lleuger, alçada regulable', price_per_day: 5.00, damage_fee: 30.00, total_units: 10, statusId: availableStatus.id_status, category: hikingCat },
+        { title: 'Motxilla de senderisme 45L', description: 'Motxilla impermeable amb sistema dorsal ergonòmic', price_per_day: 8.00, damage_fee: 50.00, total_units: 5, statusId: availableStatus.id_status, category: hikingCat },
         // MOUNTAIN
-        { title: 'Arnès d\'escalada', description: 'Arnès homologat per a via ferrata i escalada esportiva', price_per_day: 6.00, units: 8, statusId: availableStatus.id_status, category: mountainCat },
-        { title: 'Casc multiesport', description: 'Casc lleuger multiesport amb ajust regulable', price_per_day: 4.00, units: 8, statusId: availableStatus.id_status, category: mountainCat },
+        { title: 'Arnès d\'escalada', description: 'Arnès homologat per a via ferrata i escalada esportiva', price_per_day: 6.00, damage_fee: 80.00, total_units: 8, statusId: availableStatus.id_status, category: mountainCat },
+        { title: 'Casc multiesport', description: 'Casc lleuger multiesport amb ajust regulable', price_per_day: 4.00, damage_fee: 60.00, total_units: 8, statusId: availableStatus.id_status, category: mountainCat },
         // AQUATIC
-        { title: 'Caiac individual', description: 'Caiac estable per a aigües tranquil·les, inclou rem', price_per_day: 20.00, units: 6, statusId: availableStatus.id_status, category: aquaticCat },
-        { title: 'Neoprè 3mm', description: 'Vestit de neoprè complet per a temperatures de l\'aigua per damunt dels 18°C', price_per_day: 10.00, units: 8, statusId: availableStatus.id_status, category: aquaticCat },
+        { title: 'Caiac individual', description: 'Caiac estable per a aigües tranquil·les, inclou rem', price_per_day: 20.00, damage_fee: 200.00, total_units: 6, statusId: availableStatus.id_status, category: aquaticCat },
+        { title: 'Neoprè 3mm', description: 'Vestit de neoprè complet per a temperatures de l\'aigua per damunt dels 18°C', price_per_day: 10.00, damage_fee: 100.00, total_units: 8, statusId: availableStatus.id_status, category: aquaticCat },
         // SNOW
-        { title: 'Raquetes de neu', description: 'Raquetes de neu d\'alumini per a terreny variat, fixació regulable', price_per_day: 12.00, units: 10, statusId: availableStatus.id_status, category: snowCat },
-        { title: 'Equip d\'esquí nòrdic', description: 'Equip complet d\'esquí nòrdic clàssic amb botes i bastons', price_per_day: 18.00, units: 6, statusId: unavailableStatus.id_status, category: snowCat },
+        { title: 'Raquetes de neu', description: 'Raquetes de neu d\'alumini per a terreny variat, fixació regulable', price_per_day: 12.00, damage_fee: 90.00, total_units: 10, statusId: availableStatus.id_status, category: snowCat },
+        { title: 'Equip d\'esquí nòrdic', description: 'Equip complet d\'esquí nòrdic clàssic amb botes i bastons', price_per_day: 18.00, damage_fee: 150.00, total_units: 6, statusId: unavailableStatus.id_status, category: snowCat },
         // CAMPING
-        { title: 'Tenda de campanya 2 persones', description: 'Tenda de 3 estacions, muntatge fàcil, 2kg', price_per_day: 15.00, units: 3, statusId: availableStatus.id_status, category: campingCat },
-        { title: 'Sac de dormir -5°C', description: 'Sac de dormir sintètic homologat fins a -5°C, inclou funda de compressió', price_per_day: 7.00, units: 8, statusId: availableStatus.id_status, category: campingCat },
+        { title: 'Tenda de campanya 2 persones', description: 'Tenda de 3 estacions, muntatge fàcil, 2kg', price_per_day: 15.00, damage_fee: 120.00, total_units: 3, statusId: availableStatus.id_status, category: campingCat },
+        { title: 'Sac de dormir -5°C', description: 'Sac de dormir sintètic homologat fins a -5°C, inclou funda de compressió', price_per_day: 7.00, damage_fee: 40.00, total_units: 8, statusId: availableStatus.id_status, category: campingCat },
     ];
 
     for (const { category, ...itemData } of equipment) {
@@ -471,8 +492,8 @@ async function main() {
         await seedUsers();
         await seedBookingStatuses();
         await seedEquipmentStatuses();
-        await seedGuides();
         await seedCategories();
+        await seedGuides();
         await seedActivities();
         await seedEquipment();
         await seedBookings();
