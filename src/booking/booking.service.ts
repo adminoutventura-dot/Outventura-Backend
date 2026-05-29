@@ -221,7 +221,7 @@ export class BookingService {
       });
 
       const reserved = reservedUnits._sum?.quantity ?? 0;
-      const available = equipment.units - reserved;
+      const available = equipment.total_units - reserved;
 
       if (line.quantity > available) {
         throw new BadRequestException(

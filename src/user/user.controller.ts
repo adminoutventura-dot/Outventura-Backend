@@ -84,7 +84,7 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'Usuari no trobat.' })
   @ApiResponse({ status: 409, description: 'L\'usuari ja és guia.' })
   async promoteToGuide(@Param('id', ParseIntPipe) id: number, @Body() dto: PromoteGuideDto) {
-    return this.userService.promoteToGuide(id, dto.specialty, dto.credentials);
+    return this.userService.promoteToGuide(id, dto.credentials);
   }
 
   @Patch(':id/promote/admin')

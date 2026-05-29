@@ -235,9 +235,9 @@ export class BookingLineService {
         );
       }
 
-      if (dto.quantity > equipment.units) {
+      if (dto.quantity > equipment.total_units) {
         throw new BadRequestException(
-          `No hi ha suficients unitats disponibles. Unitats en stock: ${equipment.units}`
+          `No hi ha suficients unitats disponibles. Unitats en stock: ${equipment.total_units}`
         );
       }
 
@@ -365,9 +365,9 @@ export class BookingLineService {
         throw new NotFoundException('Material no trobat');
       }
 
-      if (dto.quantity > equipment.units) {
+      if (dto.quantity > equipment.total_units) {
         throw new BadRequestException(
-          `No hi ha suficients unitats disponibles. Unitats en stock: ${equipment.units}`
+          `No hi ha suficients unitats disponibles. Unitats en stock: ${equipment.total_units}`
         );
       }
 

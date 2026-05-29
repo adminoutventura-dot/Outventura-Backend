@@ -166,7 +166,7 @@ export class UserService {
     return { ...userWithoutPassword, status: userWithoutPassword.status ? 'ACTIU' : 'INACTIU' };
   }
 
-  async promoteToGuide(id: number, specialty: string, credentials: string) {
+  async promoteToGuide(id: number, credentials: string) {
     const targetUser = await this.prisma.user.findUnique({
       where: { id_user: id },
       include: { role: true }
@@ -196,7 +196,7 @@ export class UserService {
           include: { role: true }
         }),
         this.prisma.guide.create({
-          data: { userId: id, specialty, credentials }
+          data: { userId: id, credentials }
         })
       ]);
 
@@ -209,7 +209,7 @@ export class UserService {
 
     if (currentRole === 'ADMIN' || currentRole === 'SUPER') {
       const guide = await this.prisma.guide.create({
-        data: { userId: id, specialty, credentials }
+        data: { userId: id, credentials }
       });
 
       const { password, ...userWithoutPassword } = targetUser as any;

@@ -92,7 +92,7 @@ export class AuthService {
         experience_level: true,
         createdAt: true,
         role: { select: { code: true, description: true } },
-        guide: { select: { specialty: true, credentials: true } },
+        guide: { select: { credentials: true } },
       },
     });
 
