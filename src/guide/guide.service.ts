@@ -11,22 +11,26 @@ export class GuideService {
     const user = await this.prisma.user.findUnique({
       where: { id_user: dto.userId }
     });
-
-    if (!user) {
-      throw new NotFoundException('Usuari no trobat');
-    }
+    if (!user) throw new NotFoundException('Usuari no trobat');
 
     const existing = await this.prisma.guide.findUnique({
       where: { userId: dto.userId }
     });
+    if (existing) throw new ConflictException('Aquest usuari ja és guia');
 
-    if (existing) {
-      throw new ConflictException('Aquest usuari ja és guia');
-    }
+    const { categoryIds, ...guideData } = dto;
 
     const guide = await this.prisma.guide.create({
-      data: dto,
-      include: { user: { select: { name: true, surname: true, email: true, status: true } } }
+      data: {
+        ...guideData,
+        ...(categoryIds && categoryIds.length > 0 && {
+          categories: { connect: categoryIds.map(id => ({ id_category: id })) }
+        })
+      },
+      include: {
+        user: { select: { name: true, surname: true, email: true, status: true } },
+        categories: true
+      }
     });
 
     return {
@@ -37,7 +41,10 @@ export class GuideService {
 
   async findAll() {
     const guides = await this.prisma.guide.findMany({
-      include: { user: { select: { name: true, surname: true, email: true, status: true } } }
+      include: {
+        user: { select: { name: true, surname: true, email: true, status: true } },
+        categories: true
+      }
     });
 
     return guides.map(guide => ({
@@ -49,12 +56,12 @@ export class GuideService {
   async findOne(id: number) {
     const guide = await this.prisma.guide.findUnique({
       where: { id_guide: id },
-      include: { user: { select: { name: true, surname: true, email: true, status: true } } }
+      include: {
+        user: { select: { name: true, surname: true, email: true, status: true } },
+        categories: true
+      }
     });
-
-    if (!guide) {
-      throw new NotFoundException('Guia no trobat');
-    }
+    if (!guide) throw new NotFoundException('Guia no trobat');
 
     return {
       ...guide,
@@ -64,10 +71,23 @@ export class GuideService {
 
   async update(id: number, dto: UpdateGuideDto) {
     await this.findOne(id);
+
+    const { categoryIds, ...guideData } = dto;
+
     const guide = await this.prisma.guide.update({
       where: { id_guide: id },
-      data: dto,
-      include: { user: { select: { name: true, surname: true, email: true, status: true } } }
+      data: {
+        ...guideData,
+        ...(categoryIds !== undefined && {
+          categories: {
+            set: categoryIds.map(id => ({ id_category: id }))
+          }
+        })
+      },
+      include: {
+        user: { select: { name: true, surname: true, email: true, status: true } },
+        categories: true
+      }
     });
 
     return {
@@ -81,19 +101,13 @@ export class GuideService {
       where: { id_guide: id },
       include: { user: { include: { role: true } } }
     });
-
-    if (!guide) {
-      throw new NotFoundException('Guia no trobat');
-    }
+    if (!guide) throw new NotFoundException('Guia no trobat');
 
     const userRole = guide.user.role.code;
 
-    // Si el rol és GUIDE → elimina perfil i torna rol a USER
     if (userRole === 'GUIDE') {
       const userRoleEntity = await this.prisma.role.findUnique({ where: { code: 'USER' } });
-      if (!userRoleEntity) {
-        throw new NotFoundException('Rol USER no trobat');
-      }
+      if (!userRoleEntity) throw new NotFoundException('Rol USER no trobat');
 
       await this.prisma.$transaction([
         this.prisma.guide.delete({ where: { id_guide: id } }),
@@ -106,10 +120,8 @@ export class GuideService {
       return { message: 'Perfil de guia eliminat i rol tornat a USER correctament.' };
     }
 
-    // Si és ADMIN o SUPER → elimina només el perfil, manté el rol
     if (userRole === 'ADMIN' || userRole === 'SUPER') {
       await this.prisma.guide.delete({ where: { id_guide: id } });
-
       return { message: 'Perfil de guia eliminat. El rol s\'ha mantingut.' };
     }
   }
