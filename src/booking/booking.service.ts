@@ -128,66 +128,117 @@ export class BookingService {
       }
     }
 
-    const newStatus = await this.prisma.bookingStatus.findUnique({
-      where: { id_book_status: dto.statusId }
-    });
+    const updateData: any = {};
 
-    if (!newStatus) {
-      throw new NotFoundException('Estat de reserva no trobat');
+    if (dto.userId != null && dto.userId !== booking.userId) {
+      const user = await this.prisma.user.findUnique({ where: { id_user: dto.userId } });
+      if (!user) {
+        throw new NotFoundException('Usuari no trobat');
+      }
+      if (!user.status) {
+        throw new BadRequestException(
+          'El teu perfil està inactiu temporalment. Contacta amb un administrador.'
+        );
+      }
+      updateData.user = { connect: { id_user: dto.userId } };
     }
 
-    const newStatusCode = newStatus.code;
+    const initDate = dto.init_date ? new Date(dto.init_date) : undefined;
+    const endDate = dto.end_date ? new Date(dto.end_date) : undefined;
 
-    const validTransitions: Record<string, string[]> = {
-      'PENDING': ['ACCEPTED', 'CANCELLED'],
-      'ACCEPTED': ['IN_PROGRESS', 'CANCELLED'],
-      'IN_PROGRESS': ['FINISHED'],
-      'FINISHED': [],
-      'CANCELLED': [],
+    if (initDate && endDate && initDate >= endDate) {
+      throw new BadRequestException('La data d\'inici ha de ser anterior a la data de fi.');
+    }
+
+    if (initDate && !endDate && initDate >= booking.end_date) {
+      throw new BadRequestException('La data d\'inici ha de ser anterior a la data de fi.');
+    }
+
+    if (endDate && !initDate && booking.init_date >= endDate) {
+      throw new BadRequestException('La data d\'inici ha de ser anterior a la data de fi.');
+    }
+
+    if (initDate) {
+      updateData.init_date = initDate;
+    }
+
+    if (endDate) {
+      updateData.end_date = endDate;
+    }
+
+    let newStatusCode = currentStatus;
+
+    if (dto.statusId != null) {
+      const newStatus = await this.prisma.bookingStatus.findUnique({
+        where: { id_book_status: dto.statusId }
+      });
+
+      if (!newStatus) {
+        throw new NotFoundException('Estat de reserva no trobat');
+      }
+
+      newStatusCode = newStatus.code;
+
+      const validTransitions: Record<string, string[]> = {
+        'PENDING': ['ACCEPTED', 'CANCELLED'],
+        'ACCEPTED': ['IN_PROGRESS', 'CANCELLED'],
+        'IN_PROGRESS': ['FINISHED'],
+        'FINISHED': [],
+        'CANCELLED': [],
+      };
+
+      if (currentStatus !== newStatusCode) {
+        if (['FINISHED', 'CANCELLED'].includes(currentStatus)) {
+          if (currentRole !== 'SUPER') {
+            throw new ForbiddenException(
+              `No es pot canviar l\'estat d\'una reserva ${currentStatus}. Contacta amb un superadministrador.`
+            );
+          }
+        } else {
+          const allowed = validTransitions[currentStatus] || [];
+          if (!allowed.includes(newStatusCode)) {
+            throw new BadRequestException(
+              `No es pot canviar l\'estat de ${currentStatus} a ${newStatusCode}. Transicions permeses: ${allowed.join(', ')}`
+            );
+          }
+        }
+      }
+
+      updateData.status = { connect: { id_book_status: dto.statusId } };
+    }
+
+    const effectiveBooking = {
+      ...booking,
+      init_date: initDate ?? booking.init_date,
+      end_date: endDate ?? booking.end_date,
     };
 
-    if (['FINISHED', 'CANCELLED'].includes(currentStatus)) {
-      if (currentRole !== 'SUPER') {
-        throw new ForbiddenException(
-          `No es pot canviar l\'estat d\'una reserva ${currentStatus}. Contacta amb un superadministrador.`
-        );
-      }
-    }
-    else {
-      const allowed = validTransitions[currentStatus] || [];
-
-      if (!allowed.includes(newStatusCode)) {
-        throw new BadRequestException(
-          `No es pot canviar l\'estat de ${currentStatus} a ${newStatusCode}. Transicions permeses: ${allowed.join(', ')}`
-        );
-      }
+    if (dto.statusId != null && currentStatus !== newStatusCode && newStatusCode === 'ACCEPTED') {
+      await this.validateMaterialAvailability(effectiveBooking);
     }
 
-    if (newStatusCode === 'ACCEPTED') {
-      await this.validateMaterialAvailability(booking);
-    }
-
-    if (newStatusCode === 'CANCELLED') {
+    if (dto.statusId != null && currentStatus !== newStatusCode && newStatusCode === 'CANCELLED') {
       if (currentRole === 'SUPER') {
         // SUPER pot cancelar sempre sense restriccions
       }
       else if (currentRole === 'ADMIN') {
-        // ADMIN pot cancelar totes amb restricció de temps
-        await this.validateCancellationTime(booking);
+        await this.validateCancellationTime(effectiveBooking);
       }
       else {
-        // GUIDE i USER → només les seves + restricció de temps
         if ((booking as any).userId !== currentUser.id_user) {
           throw new ForbiddenException('No tens permisos per cancelar aquesta reserva.');
         }
-
-        await this.validateCancellationTime(booking);
+        await this.validateCancellationTime(effectiveBooking);
       }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return booking;
     }
 
     return this.prisma.booking.update({
       where: { id_booking: id },
-      data: { status: { connect: { id_book_status: dto.statusId } } },
+      data: updateData,
       include: {
         user: { select: { name: true, email: true } },
         status: true,
