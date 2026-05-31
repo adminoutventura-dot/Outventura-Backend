@@ -21,13 +21,13 @@ export class CategoryController {
   @ApiResponse({ status: 401, description: 'No autenticat.' })
   @ApiResponse({ status: 403, description: 'Sense permisos suficients.' })
   @ApiResponse({ status: 409, description: 'La categoria ja existeix.' })
-  create(@Body() dto: CreateCategoryDto) {
+  create(@Body() dto: CreateCategoryDto) { 
     return this.categoriesService.create(dto);
   }
 
   @Get()
   @UseGuards(OptionalJwtGuard, RolesGuard)
-  @Roles('SUPER', 'ADMIN')
+  @Roles('SUPER', 'ADMIN', 'GUIDE')
   @ApiOperation({ summary: 'Llistar totes les categories' })
   @ApiResponse({ status: 200, description: 'Llista de categories retornada.' })
   findAll() {
@@ -36,7 +36,7 @@ export class CategoryController {
 
   @Get(':id')
   @UseGuards(OptionalJwtGuard, RolesGuard)
-  @Roles('SUPER', 'ADMIN')
+  @Roles('SUPER', 'ADMIN', 'GUIDE')
   @ApiOperation({ summary: 'Obtenir una categoria per ID' })
   @ApiResponse({ status: 200, description: 'Categoria retornada correctament.' })
   @ApiResponse({ status: 404, description: 'Categoria no trobada.' })
