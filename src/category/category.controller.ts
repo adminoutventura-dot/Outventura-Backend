@@ -27,7 +27,7 @@ export class CategoryController {
 
   @Get()
   @UseGuards(OptionalJwtGuard, RolesGuard)
-  @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER', 'GUEST')
+  @Roles('SUPER', 'ADMIN')
   @ApiOperation({ summary: 'Llistar totes les categories' })
   @ApiResponse({ status: 200, description: 'Llista de categories retornada.' })
   findAll() {
@@ -36,7 +36,7 @@ export class CategoryController {
 
   @Get(':id')
   @UseGuards(OptionalJwtGuard, RolesGuard)
-  @Roles('SUPER', 'ADMIN', 'GUIDE', 'USER', 'GUEST')
+  @Roles('SUPER', 'ADMIN')
   @ApiOperation({ summary: 'Obtenir una categoria per ID' })
   @ApiResponse({ status: 200, description: 'Categoria retornada correctament.' })
   @ApiResponse({ status: 404, description: 'Categoria no trobada.' })

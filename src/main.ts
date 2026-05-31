@@ -83,7 +83,7 @@ Obtén el token a \`POST /auth/login\` i afegeix-lo amb el botó **Authorize** �
     },
   });
 
-  await app.listen(3000);
+  await app.listen(3000, '0.0.0.0');
   console.log(`🚀 API funcionant en: http://localhost:3000/api`);
 }
 bootstrap();
