@@ -24,5 +24,16 @@ services:
     depends_on:
       - postgres
 
+  backend:
+    build: .
+    container_name: outventura_backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://outventura:outventura123@postgres:5432/outventura_db?schema=public
+    depends_on:
+      - postgres
+
 volumes:
   postgres_data:
