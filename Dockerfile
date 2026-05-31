@@ -18,4 +18,4 @@ RUN npm run build
 EXPOSE 3000
 
 # 4. Arranca la app en modo producción
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/src/main.js"]
